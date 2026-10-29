@@ -32,6 +32,11 @@ sh: ## Shell в php-контейнере
 install: ## composer install
 	$(PHP) composer install
 
+# vendor/ не в git: на свежем клоне ставится автоматически перед проверками
+vendor: composer.json composer.lock
+	$(PHP) composer install --no-interaction
+	@touch vendor
+
 ## --- База и очереди ---
 migrate: ## Применить миграции
 	$(PHP) bin/console doctrine:migrations:migrate --no-interaction
@@ -46,18 +51,18 @@ emulate: ## Сгенерировать поток событий для учен
 	$(PHP) bin/console app:emulate-events $(ARGS)
 
 ## --- Качество ---
-test-db: ## Создать тестовую базу и применить миграции
+test-db: vendor ## Создать тестовую базу и применить миграции
 	$(PHP) bin/console --env=test doctrine:database:create --if-not-exists --quiet
 	$(PHP) bin/console --env=test doctrine:migrations:migrate --no-interaction --allow-no-migration --quiet
 
 test: test-db ## PHPUnit
 	$(PHP) bin/phpunit
 
-stan: ## PHPStan (level 8)
+stan: vendor ## PHPStan (level 8)
 	$(PHP) bin/console cache:warmup --env=dev --quiet
 	$(PHP) vendor/bin/phpstan analyse --memory-limit=1G
 
-cs: ## PHP-CS-Fixer, только проверка
+cs: vendor ## PHP-CS-Fixer, только проверка
 	$(PHP) vendor/bin/php-cs-fixer fix --dry-run --diff
 
 cs-fix: ## PHP-CS-Fixer, исправить
