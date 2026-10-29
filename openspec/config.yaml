@@ -1,0 +1,73 @@
+schema: spec-driven
+
+context: |
+  Language: ru
+  All artifacts must be written in ru.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  ## Проект
+  Сервис Диагностики — микросервис платформы менторинга. Собирает события
+  активности учеников, считает метрики прогресса и качества материалов,
+  публикует сигналы diagnostics.* для сервиса Уведомлений.
+
+  ## Источники правды
+  - docs/SPEC.md — границы, модель данных, формулы, правила сигналов, скоуп MVP (§10).
+  - docs/asyncapi.yaml — контракты событий и DTO. Не менять без явной просьбы:
+    это контракт с другими командами.
+  - openspec/specs/ — журнал уже реализованного поведения, а не источник правды.
+    При расхождении с SPEC.md / asyncapi.yaml правы они.
+  - docs/adr/ — сквозные решения, которые переживут один change
+    (конверт событий, outbox, выбор БД, маппинг Doctrine).
+
+  ## Стек
+  - PHP 8.3, Symfony 7.4 (skeleton + нужные бандлы)
+  - PostgreSQL 16, Doctrine ORM + Migrations (маппинг XML в Infrastructure, ADR 0001)
+  - RabbitMQ: Symfony Messenger, транспорт AMQP; activity.heartbeat — отдельный транспорт
+  - Symfony Scheduler для периодических проверок сигналов
+  - Docker Compose: php, nginx, postgres, rabbitmq
+  - PHPUnit, PHPStan level 8, PHP-CS-Fixer @Symfony; всё запускает `make check`
+
+  ## Слои (src/)
+  - Domain/ — сущности, value objects, формулы метрик; чистый PHP без Symfony/Doctrine.
+    Время — через Psr\Clock\ClockInterface.
+  - Application/ — хендлеры событий, use cases, правила сигналов, порты (интерфейсы).
+  - Infrastructure/ — Doctrine-репозитории и маппинг, Messenger (сериализатор конверта),
+    outbox, scheduler.
+  - UI/Http/ — Read-API /api/v1; UI/Console/ — команды, в т.ч. эмулятор событий.
+
+  ## Инварианты
+  - Идемпотентность входящих: inbox_event, проверка event_id в той же транзакции.
+  - Исходящие сигналы — только через outbox, в одной транзакции с signal_state;
+    публикация на переходе состояния (SPEC §7.3).
+  - Пороги — из таблицы threshold, не хардкодом.
+  - Время хранится в UTC, расписания — Europe/Belgrade.
+  - Миграции только через doctrine:migrations:diff.
+
+rules:
+  proposal:
+    - Ссылаться на пункт SPEC (§) и шаг MVP из CLAUDE.md, который реализует change.
+    - Явно перечислять, что вне скоупа; бэклог SPEC §10 не брать без запроса.
+    - Если change требует изменить SPEC.md или asyncapi.yaml — остановиться и спросить,
+      не закладывать изменение контракта молча.
+  specs:
+    - Требования не должны противоречить SPEC.md и asyncapi.yaml; формулы и пороги
+      брать оттуда, указывая §.
+  design:
+    - Здесь — решения в рамках одного change. Сквозное решение, которое переживёт
+      change, оформить отдельным docs/adr/NNNN-название.md и сослаться на него.
+    - Указывать, в каком слое (Domain/Application/Infrastructure/UI) живёт каждая часть.
+  tasks:
+    - "Каждая задача — маленький шаг: код → тесты → зелёный make check → коммит
+      (Conventional Commits)."
+    - Формулы Domain покрывать юнит-тестами на табличных примерах.
+    - Новая зависимость — отдельная задача с объяснением зачем.
+
+operations:
+  apply:
+    guidance:
+      - Одна задача из tasks.md → тесты → make check → коммит; не копить изменения.
+      - Если реализация расходится со SPEC.md — остановиться и спросить.
+  archive:
+    guidance:
+      - Перед архивацией сверить итоговые требования со SPEC.md и asyncapi.yaml
+        и назвать расхождения, если есть.
