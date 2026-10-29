@@ -1,0 +1,494 @@
+asyncapi: 3.0.0
+info:
+  title: Diagnostics Service — event contracts
+  version: 0.1.0
+  description: |
+    Входящие события, которые потребляет сервис Диагностики, и исходящие
+    сигналы diagnostics.*, которые он публикует для сервиса Уведомлений.
+    Все сообщения — JSON в общем конверте Envelope.
+    Брокер: RabbitMQ. Exchange — topic, routing key = event_type.
+    Время — ISO 8601 UTC. Идентификаторы — UUID.
+
+defaultContentType: application/json
+
+servers:
+  local:
+    host: rabbitmq:5672
+    protocol: amqp
+    protocolVersion: 0-9-1
+
+channels:
+  # ---------- входящие ----------
+  authEvents:
+    address: auth.events
+    description: Exchange сервиса Auth.
+    messages:
+      userRegistered: { $ref: '#/components/messages/UserRegistered' }
+
+  coursesEvents:
+    address: courses.events
+    description: Exchange сервиса Курсов (включая песочницу и AI-подсказки).
+    messages:
+      pathAssigned: { $ref: '#/components/messages/PathAssigned' }
+      pathUpdated: { $ref: '#/components/messages/PathUpdated' }
+      taskStarted: { $ref: '#/components/messages/TaskStarted' }
+      taskCompleted: { $ref: '#/components/messages/TaskCompleted' }
+      quizAnswered: { $ref: '#/components/messages/QuizAnswered' }
+      sandboxRun: { $ref: '#/components/messages/SandboxRun' }
+      hintUsed: { $ref: '#/components/messages/HintUsed' }
+      materialRated: { $ref: '#/components/messages/MaterialRated' }
+
+  activityEvents:
+    address: activity.events
+    description: Высокочастотный поток heartbeat. Отдельная очередь у Диагностики.
+    messages:
+      activityHeartbeat: { $ref: '#/components/messages/ActivityHeartbeat' }
+
+  timeEvents:
+    address: time.events
+    description: Списание времени. Владелец сервиса — открытый вопрос (SPEC §11).
+    messages:
+      timeLogged: { $ref: '#/components/messages/TimeLogged' }
+
+  assessmentEvents:
+    address: assessment.events
+    description: Опционально. Результат входной диагностики.
+    messages:
+      assessmentCompleted: { $ref: '#/components/messages/AssessmentCompleted' }
+
+  # ---------- исходящие ----------
+  diagnosticsEvents:
+    address: diagnostics.events
+    description: Exchange Диагностики. Подписчик — сервис Уведомлений.
+    messages:
+      studentInactive: { $ref: '#/components/messages/StudentInactive' }
+      weeklyGoalBehind: { $ref: '#/components/messages/WeeklyGoalBehind' }
+      taskStuck: { $ref: '#/components/messages/TaskStuck' }
+      timeLogMissing: { $ref: '#/components/messages/TimeLogMissing' }
+      stageCompleted: { $ref: '#/components/messages/StageCompleted' }
+      streakMilestone: { $ref: '#/components/messages/StreakMilestone' }
+      studentAtRisk: { $ref: '#/components/messages/StudentAtRisk' }
+      quizTopicFailed: { $ref: '#/components/messages/QuizTopicFailed' }
+      materialNeedsReview: { $ref: '#/components/messages/MaterialNeedsReview' }
+      mentorWeeklyDigest: { $ref: '#/components/messages/MentorWeeklyDigest' }
+
+operations:
+  consumeAuth:
+    action: receive
+    channel: { $ref: '#/channels/authEvents' }
+  consumeCourses:
+    action: receive
+    channel: { $ref: '#/channels/coursesEvents' }
+  consumeActivity:
+    action: receive
+    channel: { $ref: '#/channels/activityEvents' }
+  consumeTime:
+    action: receive
+    channel: { $ref: '#/channels/timeEvents' }
+  consumeAssessment:
+    action: receive
+    channel: { $ref: '#/channels/assessmentEvents' }
+  publishSignals:
+    action: send
+    channel: { $ref: '#/channels/diagnosticsEvents' }
+
+components:
+  schemas:
+    Uuid: { type: string, format: uuid }
+    Timestamp: { type: string, format: date-time }
+
+    Envelope:
+      type: object
+      required: [event_id, event_type, event_version, occurred_at, producer, payload]
+      properties:
+        event_id: { $ref: '#/components/schemas/Uuid', description: 'Ключ идемпотентности' }
+        event_type: { type: string, description: 'Совпадает с routing key, напр. task.completed' }
+        event_version: { type: integer, minimum: 1 }
+        occurred_at: { $ref: '#/components/schemas/Timestamp' }
+        producer: { type: string, examples: [courses, auth, diagnostics] }
+        correlation_id: { $ref: '#/components/schemas/Uuid' }
+        payload: { type: object }
+
+    Audience:
+      type: string
+      enum: [student, mentor]
+
+    SignalBase:
+      type: object
+      required: [audience, student_id]
+      properties:
+        audience: { $ref: '#/components/schemas/Audience' }
+        student_id: { $ref: '#/components/schemas/Uuid' }
+        mentor_id: { $ref: '#/components/schemas/Uuid', description: 'Ментор ученика; заполнен всегда, когда известен' }
+
+    PathSnapshot:
+      type: object
+      required: [student_id, path_id, mentor_id, started_at, weekly_goal_minutes, tasks]
+      properties:
+        student_id: { $ref: '#/components/schemas/Uuid' }
+        path_id: { $ref: '#/components/schemas/Uuid' }
+        mentor_id: { $ref: '#/components/schemas/Uuid' }
+        started_at: { $ref: '#/components/schemas/Timestamp' }
+        weekly_goal_minutes: { type: integer, examples: [1500] }
+        tasks:
+          type: array
+          items:
+            type: object
+            required: [task_id, stage_id, estimate_minutes, position]
+            properties:
+              task_id: { $ref: '#/components/schemas/Uuid' }
+              stage_id: { $ref: '#/components/schemas/Uuid' }
+              estimate_minutes: { type: integer, minimum: 1 }
+              position: { type: integer }
+              kind: { type: string, enum: [theory, quiz, sandbox, video, reading, questions] }
+
+  messages:
+    # ======== ВХОДЯЩИЕ ========
+    UserRegistered:
+      name: user.registered
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [user_id, role]
+                properties:
+                  user_id: { $ref: '#/components/schemas/Uuid' }
+                  role: { type: string, enum: [student, mentor, admin] }
+
+    PathAssigned:
+      name: path.assigned
+      summary: Ментор назначил ученику путь. Полный снапшот.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload: { $ref: '#/components/schemas/PathSnapshot' }
+
+    PathUpdated:
+      name: path.updated
+      summary: Путь изменён ментором. Полный снапшот (заменяет предыдущий).
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload: { $ref: '#/components/schemas/PathSnapshot' }
+
+    TaskStarted:
+      name: task.started
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, path_id, task_id]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  path_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+
+    TaskCompleted:
+      name: task.completed
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, path_id, task_id]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  path_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+
+    QuizAnswered:
+      name: quiz.answered
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, task_id, quiz_id, attempt, answers]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  quiz_id: { $ref: '#/components/schemas/Uuid' }
+                  attempt: { type: integer, minimum: 1 }
+                  answers:
+                    type: array
+                    items:
+                      type: object
+                      required: [question_id, topic, is_correct]
+                      properties:
+                        question_id: { $ref: '#/components/schemas/Uuid' }
+                        topic: { type: string, examples: [oop, sql, http] }
+                        is_correct: { type: boolean }
+
+    SandboxRun:
+      name: sandbox.run
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [run_id, student_id, task_id, result]
+                properties:
+                  run_id: { $ref: '#/components/schemas/Uuid' }
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  result: { type: string, enum: [passed, failed, error] }
+                  tests_passed: { type: integer }
+                  tests_total: { type: integer }
+                  error_type: { type: string, description: 'Класс ошибки, напр. TypeError, Timeout' }
+
+    ActivityHeartbeat:
+      name: activity.heartbeat
+      summary: Раз в 60 с, пока вкладка активна и были действия пользователя.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, source]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  source: { type: string, enum: [theory, sandbox, quiz, other] }
+
+    TimeLogged:
+      name: time.logged
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, minutes, category, logged_for_date]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  minutes: { type: integer, minimum: 1 }
+                  category: { type: string, enum: [theory, practice, interview] }
+                  logged_for_date: { type: string, format: date }
+
+    HintUsed:
+      name: hint.used
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, task_id, level]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  level: { type: integer, enum: [1, 2, 3], description: '1 — наводящий вопрос, 2 — направление, 3 — частичное решение' }
+
+    MaterialRated:
+      name: material.rated
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, task_id, rating]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  rating: { type: integer, minimum: 1, maximum: 5 }
+                  unclear: { type: boolean, default: false }
+
+    AssessmentCompleted:
+      name: assessment.completed
+      summary: Опционально. Базовая линия по темам.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [student_id, topics]
+                properties:
+                  student_id: { $ref: '#/components/schemas/Uuid' }
+                  topics:
+                    type: array
+                    items:
+                      type: object
+                      required: [topic, score]
+                      properties:
+                        topic: { type: string }
+                        score: { type: integer, minimum: 0, maximum: 100 }
+
+    # ======== ИСХОДЯЩИЕ ========
+    StudentInactive:
+      name: diagnostics.student.inactive
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [days_inactive, last_activity_at]
+                    properties:
+                      days_inactive: { type: integer }
+                      last_activity_at: { $ref: '#/components/schemas/Timestamp' }
+
+    WeeklyGoalBehind:
+      name: diagnostics.weekly_goal.behind
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [goal_minutes, logged_minutes, week_start]
+                    properties:
+                      goal_minutes: { type: integer }
+                      logged_minutes: { type: integer }
+                      week_start: { type: string, format: date }
+
+    TaskStuck:
+      name: diagnostics.task.stuck
+      summary: audience=student — первый сигнал; audience=mentor — эскалация через 24 ч.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [task_id, reason]
+                    properties:
+                      task_id: { $ref: '#/components/schemas/Uuid' }
+                      reason: { type: string, enum: [time_exceeded, failed_runs] }
+                      active_minutes: { type: integer }
+                      estimate_minutes: { type: integer }
+                      failed_runs: { type: integer }
+
+    TimeLogMissing:
+      name: diagnostics.time.log_missing
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [date, active_minutes]
+                    properties:
+                      date: { type: string, format: date }
+                      active_minutes: { type: integer }
+
+    StageCompleted:
+      name: diagnostics.stage.completed
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [path_id, stage_id]
+                    properties:
+                      path_id: { $ref: '#/components/schemas/Uuid' }
+                      stage_id: { $ref: '#/components/schemas/Uuid' }
+
+    StreakMilestone:
+      name: diagnostics.streak.milestone
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [streak_days]
+                    properties:
+                      streak_days: { type: integer }
+
+    StudentAtRisk:
+      name: diagnostics.student.at_risk
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [path_id, spi, weeks_below_threshold]
+                    properties:
+                      path_id: { $ref: '#/components/schemas/Uuid' }
+                      spi: { type: number }
+                      weeks_below_threshold: { type: integer }
+                      delay_days: { type: integer }
+
+    QuizTopicFailed:
+      name: diagnostics.quiz.topic_failed
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                allOf:
+                  - $ref: '#/components/schemas/SignalBase'
+                  - required: [topic, failed_attempts]
+                    properties:
+                      topic: { type: string }
+                      failed_attempts: { type: integer }
+                      task_id: { $ref: '#/components/schemas/Uuid' }
+
+    MaterialNeedsReview:
+      name: diagnostics.material.needs_review
+      summary: Не про конкретного ученика — student_id отсутствует.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [mentor_id, task_id, reasons, sample_size]
+                properties:
+                  mentor_id: { $ref: '#/components/schemas/Uuid' }
+                  task_id: { $ref: '#/components/schemas/Uuid' }
+                  sample_size: { type: integer }
+                  reasons:
+                    type: array
+                    items:
+                      type: object
+                      required: [metric, value, threshold]
+                      properties:
+                        metric: { type: string, enum: [calibration, stuck_rate, hint_rate, quiz_item, student_rating, unclear_rate] }
+                        value: { type: number }
+                        threshold: { type: number }
+
+    MentorWeeklyDigest:
+      name: diagnostics.mentor.weekly_digest
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                type: object
+                required: [mentor_id, week_start, students]
+                properties:
+                  mentor_id: { $ref: '#/components/schemas/Uuid' }
+                  week_start: { type: string, format: date }
+                  students:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        student_id: { $ref: '#/components/schemas/Uuid' }
+                        logged_minutes: { type: integer }
+                        spi: { type: number }
+                        active_signals: { type: array, items: { type: string } }
+                  materials_needing_review: { type: array, items: { $ref: '#/components/schemas/Uuid' } }
