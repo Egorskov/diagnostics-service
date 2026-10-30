@@ -23,7 +23,7 @@
 - [x] 4.1 `EventTypeRegistry` (`event_type` + `event_version` → класс DTO, только 6 событий MVP, версия 1); проверка: юнит-тест на известный тип, неизвестный тип, версию 2
 - [x] 4.2 `EnvelopeSerializer::decode()` → DTO или `UndecodableMessage` с причиной; `RawBodyStamp` с исходным телом; `RedeliveryStamp` из заголовков `X-Retry-Count` / `X-Redelivered-At` (design §4); проверка: табличный юнит-тест — не JSON, невалидный конверт, неизвестный тип, неподдерживаемая версия, невалидный payload, валидное событие
 - [x] 4.3 `EnvelopeSerializer::encode()` возвращает исходное тело и счётчик попыток в заголовках; проверка: юнит-тест round-trip `decode(encode(x))` сохраняет тело байт-в-байт и `RedeliveryStamp`
-- [ ] 4.4 `UndecodableMessage` и его хендлер (`UnrecoverableMessageHandlingException`); проверка: юнит-тест, что хендлер бросает unrecoverable с причиной
+- [x] 4.4 `UndecodableMessage` и его хендлер (`UnrecoverableMessageHandlingException`); проверка: юнит-тест, что хендлер бросает unrecoverable с причиной
 
 ## 5. Inbox (Infrastructure)
 
