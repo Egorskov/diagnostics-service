@@ -27,6 +27,9 @@ final class PayloadReaderTest extends TestCase
         yield 'string' => [['v' => 'abc'], static fn (PayloadReader $r) => $r->string('v'), 'abc'];
         yield 'optional string absent' => [[], static fn (PayloadReader $r) => $r->optionalString('v'), null];
         yield 'optional string null' => [['v' => null], static fn (PayloadReader $r) => $r->optionalString('v'), null];
+        // asyncapi.yaml не задаёт minLength — пустая строка валидна и не превращается в null
+        yield 'empty string' => [['v' => ''], static fn (PayloadReader $r) => $r->string('v'), ''];
+        yield 'optional empty string' => [['v' => ''], static fn (PayloadReader $r) => $r->optionalString('v'), ''];
         yield 'int' => [['v' => 0], static fn (PayloadReader $r) => $r->int('v'), 0];
         yield 'int at min' => [['v' => 1], static fn (PayloadReader $r) => $r->int('v', min: 1), 1];
         yield 'optional int absent' => [[], static fn (PayloadReader $r) => $r->optionalInt('v'), null];
@@ -63,8 +66,11 @@ final class PayloadReaderTest extends TestCase
     {
         yield 'missing string' => [[], static fn (PayloadReader $r) => $r->string('v'), 'v: is required'];
         yield 'null required' => [['v' => null], static fn (PayloadReader $r) => $r->string('v'), 'v: is required'];
-        yield 'empty string' => [['v' => ''], static fn (PayloadReader $r) => $r->string('v'), 'v: must be a non-empty string'];
-        yield 'number as string' => [['v' => 5], static fn (PayloadReader $r) => $r->string('v'), 'v: must be a non-empty string'];
+        yield 'number as string' => [['v' => 5], static fn (PayloadReader $r) => $r->string('v'), 'v: must be a string'];
+        yield 'empty uuid' => [['v' => ''], static fn (PayloadReader $r) => $r->uuid('v'), 'v: must be a UUID'];
+        yield 'empty enum' => [['v' => ''], static fn (PayloadReader $r) => $r->enum('v', Color::class), 'v: must be one of: red, green'];
+        yield 'empty date' => [['v' => ''], static fn (PayloadReader $r) => $r->date('v'), 'v: must be a date in Y-m-d format'];
+        yield 'empty datetime' => [['v' => ''], static fn (PayloadReader $r) => $r->dateTime('v'), 'v: must be an ISO 8601 date-time with timezone'];
         yield 'string as int' => [['v' => '5'], static fn (PayloadReader $r) => $r->int('v'), 'v: must be an integer'];
         yield 'float as int' => [['v' => 5.0], static fn (PayloadReader $r) => $r->int('v'), 'v: must be an integer'];
         yield 'int below min' => [['v' => 0], static fn (PayloadReader $r) => $r->int('v', min: 1), 'v: must be >= 1'];

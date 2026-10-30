@@ -92,6 +92,19 @@ final class ActivityEventsTest extends TestCase
         self::assertSame('TypeError', $event->errorType);
     }
 
+    public function testSandboxRunAcceptsEmptyErrorType(): void
+    {
+        $event = SandboxRun::fromPayload(EventFixture::metadata('sandbox.run'), EventFixture::payload([
+            'run_id' => EventFixture::RUN,
+            'student_id' => EventFixture::STUDENT,
+            'task_id' => EventFixture::TASK,
+            'result' => 'failed',
+            'error_type' => '',
+        ]));
+
+        self::assertSame('', $event->errorType);
+    }
+
     /**
      * @return iterable<string, array{class-string<IncomingEvent>, array<string, mixed>, string}>
      */

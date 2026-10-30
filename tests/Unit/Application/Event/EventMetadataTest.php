@@ -54,6 +54,11 @@ final class EventMetadataTest extends TestCase
         self::assertNull(EventMetadata::fromEnvelope($envelope)->correlationId);
     }
 
+    public function testAcceptsEmptyProducer(): void
+    {
+        self::assertSame('', EventMetadata::fromEnvelope(['producer' => ''] + self::envelope())->producer);
+    }
+
     /**
      * @return iterable<string, array{string, mixed, string}>
      */
