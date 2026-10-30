@@ -12,6 +12,7 @@ use App\Infrastructure\Messenger\RawBodyStamp;
 use App\Infrastructure\Messenger\UndecodableMessage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 
 final class EnvelopeSerializerTest extends TestCase
@@ -132,5 +133,38 @@ final class EnvelopeSerializerTest extends TestCase
 
         self::assertInstanceOf(TaskCompleted::class, $envelope->getMessage());
         self::assertNull($envelope->last(RedeliveryStamp::class));
+    }
+
+    public function testRoundTripKeepsBodyAndRetryCount(): void
+    {
+        $serializer = self::serializer();
+        // нестандартное форматирование и дубль ключа: пересобранный JSON выглядел бы иначе
+        $body = "{\n  \"event_id\": \"".self::EVENT_ID.'",'.substr(self::body(), 1);
+        $received = $serializer->decode(['body' => $body]);
+        // так ретрай Messenger помечает сообщение перед повторной отправкой
+        $retried = $received->with(new RedeliveryStamp(1, new \DateTimeImmutable('2026-10-30T12:00:01.500Z')));
+
+        $encoded = $serializer->encode($retried);
+        $decoded = $serializer->decode($encoded);
+
+        self::assertSame($body, $encoded['body']);
+        self::assertSame('application/json', $encoded['headers']['Content-Type']);
+        self::assertSame(1, $decoded->last(RedeliveryStamp::class)?->getRetryCount());
+        self::assertSame('12:00:01.500', $decoded->last(RedeliveryStamp::class)->getRedeliveredAt()->format('H:i:s.v'));
+        self::assertEquals($received->getMessage(), $decoded->getMessage());
+    }
+
+    public function testEncodesUndecodableWithRawBody(): void
+    {
+        $encoded = self::serializer()->encode(new Envelope(new UndecodableMessage('not json', DecodeFailure::InvalidJson, 'Syntax error')));
+
+        self::assertSame('not json', $encoded['body']);
+    }
+
+    public function testRefusesToEncodeMessageNotFromBroker(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        self::serializer()->encode(new Envelope(new \stdClass()));
     }
 }
