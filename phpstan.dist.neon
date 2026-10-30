@@ -18,5 +18,5 @@ parameters:
         - config/reference.php
     tmpDir: var/cache/phpstan
     symfony:
-        # Скомпилированный контейнер: PHPStan узнаёт типы сервисов и параметров
-        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+        # Скомпилированный контейнер test (= dev + тестовые сервисы): PHPStan узнаёт типы сервисов
+        containerXmlPath: var/cache/test/App_KernelTestDebugContainer.xml

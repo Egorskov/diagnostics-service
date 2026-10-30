@@ -59,7 +59,7 @@ test: test-db ## PHPUnit
 	$(PHP) bin/phpunit
 
 stan: vendor ## PHPStan (level 8)
-	$(PHP) bin/console cache:warmup --env=dev --quiet
+	$(PHP) bin/console cache:warmup --env=test --quiet
 	$(PHP) vendor/bin/phpstan analyse --memory-limit=1G
 
 cs: vendor ## PHP-CS-Fixer, только проверка

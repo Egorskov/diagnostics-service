@@ -55,8 +55,10 @@ framework:
 when@test:
     framework:
         messenger:
+            # без serialize: in-memory хранит свой TransportMessageIdStamp в стампах, а EnvelopeSerializer
+            # их не переносит (design §4); тесты сами пропускают сырое тело через EnvelopeSerializer::decode()
             transports:
-                courses: 'in-memory://?serialize=true'
-                time: 'in-memory://?serialize=true'
-                heartbeat: 'in-memory://?serialize=true'
+                courses: 'in-memory://'
+                time: 'in-memory://'
+                heartbeat: 'in-memory://'
                 failed: 'in-memory://'
