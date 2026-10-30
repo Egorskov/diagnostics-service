@@ -27,7 +27,7 @@
 
 ## 5. Inbox (Infrastructure)
 
-- [ ] 5.1 `InboxSchemaListener` описывает `inbox_event (event_id uuid PK, event_type, received_at timestamp UTC)`; `make diff` генерирует миграцию; проверка: `make migrate` применяет её, `doctrine:migrations:diff` после этого сообщает «no changes». Коммит включает сгенерированную миграцию без ручных правок
+- [x] 5.1 `InboxSchemaListener` описывает `inbox_event (event_id uuid PK, event_type, received_at timestamp UTC)`; `make diff` генерирует миграцию; проверка: `make migrate` применяет её, `doctrine:migrations:diff` после этого сообщает «no changes». Коммит включает сгенерированную миграцию без ручных правок
 - [ ] 5.2 `DbalInbox::markProcessed(EventMetadata): bool` через `INSERT … ON CONFLICT DO NOTHING`, время из `ClockInterface`; проверка: интеграционный тест на тестовой БД — первый вызов `true`, второй с тем же `event_id` `false`
 - [ ] 5.3 `InboxMiddleware` (только envelope с `ReceivedStamp` и `IncomingEvent`); проверка: интеграционный тест шины — дубликат не вызывает хендлер; при исключении хендлера строки в `inbox_event` нет; сообщения без `ReceivedStamp` проходят мимо inbox
 
