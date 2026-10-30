@@ -10,7 +10,7 @@
 ## 2. Метаданные конверта и чтение payload (Application)
 
 - [x] 2.1 `PayloadReader`: обязательные/необязательные поля, int, string, bool, UUID, дата `Y-m-d`, ISO 8601 → `DateTimeImmutable` UTC, enum, вложенные списки; ошибки `InvalidPayload` с путём поля; проверка: табличный юнит-тест на валидные и невалидные значения, включая путь `tasks[2].estimate_minutes`
-- [ ] 2.2 `EventMetadata::fromEnvelope(array)` по `asyncapi → Envelope`; проверка: табличный юнит-тест — валидный конверт, без `correlation_id`, `occurred_at` со смещением → UTC, нет каждого обязательного поля, `event_version` < 1 и не int
+- [x] 2.2 `EventMetadata::fromEnvelope(array)` по `asyncapi → Envelope`; проверка: табличный юнит-тест — валидный конверт, без `correlation_id`, `occurred_at` со смещением → UTC, нет каждого обязательного поля, `event_version` < 1 и не int
 
 ## 3. DTO событий MVP (Application)
 
