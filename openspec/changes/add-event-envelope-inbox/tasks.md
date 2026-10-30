@@ -16,7 +16,7 @@
 
 - [x] 3.1 Интерфейс `IncomingEvent` и DTO `TaskStarted`, `TaskCompleted`; проверка: юнит-тест `fromPayload` — валидный payload и отсутствие каждого обязательного поля
 - [x] 3.2 DTO `PathAssigned` со списком заданий (`PathSnapshot`, `kind` — необязательный enum); проверка: юнит-тест на снапшот из 3 заданий, на пустой `tasks` и на невалидный `estimate_minutes` < 1 в середине списка
-- [ ] 3.3 DTO `TimeLogged`, `ActivityHeartbeat`, `SandboxRun` (необязательные `task_id`, `error_type`, `tests_*`; enum `category`, `source`, `result`); проверка: юнит-тест на необязательные поля и значения вне enum
+- [x] 3.3 DTO `TimeLogged`, `ActivityHeartbeat`, `SandboxRun` (необязательные `task_id`, `error_type`, `tests_*`; enum `category`, `source`, `result`); проверка: юнит-тест на необязательные поля и значения вне enum
 
 ## 4. Сериализатор (Infrastructure)
 
