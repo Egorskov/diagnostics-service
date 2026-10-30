@@ -5,7 +5,7 @@
 ## 1. Решение и зависимость
 
 - [x] 1.1 Написать `docs/adr/0002-event-envelope-inbox.md` (конверт и `EventMetadata`, неразобранное → `UndecodableMessage` → failure transport, топология очередей по exchange-источникам, inbox в транзакции шины); проверка: ADR ссылается на SPEC §4, §5, §9 и на design.md этого change. Коммит `docs: adr 0002 event envelope and inbox`
-- [ ] 1.2 Установить `symfony/doctrine-messenger` (зачем: failure transport в PostgreSQL с `messenger:failed:show` / `failed:retry <id>`, design §5); проверка: `composer show symfony/doctrine-messenger` в контейнере, `make check` зелёный. Коммит `build: add doctrine-messenger for failure transport`
+- [x] 1.2 Установить `symfony/doctrine-messenger` (зачем: failure transport в PostgreSQL с `messenger:failed:show` / `failed:retry <id>`, design §5); проверка: `composer show symfony/doctrine-messenger` в контейнере, `make check` зелёный. Коммит `build: add doctrine-messenger for failure transport`
 
 ## 2. Метаданные конверта и чтение payload (Application)
 
