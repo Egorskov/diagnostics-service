@@ -34,7 +34,7 @@
 ## 6. Транспорты, ретраи, failure transport (Infrastructure, конфиг)
 
 - [x] 6.1 `messenger.yaml`: транспорты `courses`, `time`, `heartbeat` (exchange, очереди, binding keys по design §5, `EnvelopeSerializer`), `retry_strategy` 3 / 1000 / ×2, `failed` = `doctrine://default?queue_name=failed&auto_setup=0`, middleware шины `doctrine_ping_connection` → `doctrine_transaction` → `InboxMiddleware`; в `when@test` транспорты `in-memory://`; `make consume` → `courses time heartbeat scheduler_default`; строка `make consume` в разделе «Команды» CLAUDE.md (решение подтверждено); проверка: `bin/console debug:messenger` и `messenger:setup-transports` создают очереди `diagnostics.*` с привязками, видно в UI RabbitMQ
-- [ ] 6.2 Миграция `messenger_messages` через `make diff`; проверка: `make migrate`, `messenger:failed:show` без ошибок
+- [x] 6.2 Миграция `messenger_messages` через `make diff`; проверка: `make migrate`, `messenger:failed:show` без ошибок
 - [ ] 6.3 `FailedMessageLogger` на `WorkerMessageFailedEvent` без ретрая: `error` с `event_id`, `event_type`, `correlation_id`, транспортом, ошибкой; проверка: юнит-тест с fake-логгером на оба случая — `willRetry` (лога нет) и финальная ошибка (лог с полями)
 
 ## 7. Сквозная проверка
