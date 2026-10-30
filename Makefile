@@ -44,8 +44,8 @@ migrate: ## Применить миграции
 diff: ## Сгенерировать миграцию по изменениям маппинга
 	$(PHP) bin/console doctrine:migrations:diff
 
-consume: ## Запустить воркер Messenger (транспорты настраиваются на шагах 2–3 MVP)
-	$(PHP) bin/console messenger:consume async heartbeat scheduler_default -vv
+consume: ## Запустить воркер Messenger (heartbeat последним — его поток не задерживает остальные)
+	$(PHP) bin/console messenger:consume courses time heartbeat scheduler_default -vv
 
 emulate: ## Сгенерировать поток событий для ученика (шаг 8 MVP); аргументы: make emulate ARGS="..."
 	$(PHP) bin/console app:emulate-events $(ARGS)

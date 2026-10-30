@@ -1,22 +1,62 @@
+# Входящие события: ADR 0002, design.md change add-event-envelope-inbox.
 framework:
     messenger:
-        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-        # failure_transport: failed
+        # неразобранное и упавшее после ретраев — в PostgreSQL: messenger:failed:show / failed:retry <id>
+        failure_transport: failed
+
+        default_bus: messenger.bus.default
+        buses:
+            messenger.bus.default:
+                middleware:
+                    - doctrine_ping_connection
+                    # inbox внутри транзакции: отметка event_id коммитится вместе с изменениями хендлера
+                    - doctrine_transaction
+                    - App\Infrastructure\Messenger\InboxMiddleware
 
         transports:
-            # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
-            sync: 'sync://'
+            # Своя очередь на каждый exchange-источник; привязка — только routing keys событий MVP.
+            # Ретраи (1 с → 2 с → 4 с) уходят через default exchange прямо в нашу очередь,
+            # другие подписчики exchange их не получают.
+            courses:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: App\Infrastructure\Messenger\EnvelopeSerializer
+                retry_strategy: { max_retries: 3, delay: 1000, multiplier: 2 }
+                options:
+                    exchange: { name: courses.events, type: topic }
+                    queues:
+                        diagnostics.courses:
+                            binding_keys: [path.assigned, task.started, task.completed, sandbox.run]
 
-        routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            # владелец time.logged — открытый вопрос (SPEC §11.1); если это Курсы, транспорт уходит в courses
+            time:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: App\Infrastructure\Messenger\EnvelopeSerializer
+                retry_strategy: { max_retries: 3, delay: 1000, multiplier: 2 }
+                options:
+                    exchange: { name: time.events, type: topic }
+                    queues:
+                        diagnostics.time:
+                            binding_keys: [time.logged]
 
-# when@test:
-#    framework:
-#        messenger:
-#            transports:
-#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
-#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-#                async: 'in-memory://'
+            # самый частый поток — отдельная очередь (SPEC §9 «Нагрузка»); в make consume идёт последним
+            heartbeat:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: App\Infrastructure\Messenger\EnvelopeSerializer
+                retry_strategy: { max_retries: 3, delay: 1000, multiplier: 2 }
+                options:
+                    exchange: { name: activity.events, type: topic }
+                    queues:
+                        diagnostics.heartbeat:
+                            binding_keys: [activity.heartbeat]
+
+            # таблица messenger_messages создаётся миграцией, а не транспортом
+            failed: 'doctrine://default?queue_name=failed&auto_setup=0'
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                courses: 'in-memory://?serialize=true'
+                time: 'in-memory://?serialize=true'
+                heartbeat: 'in-memory://?serialize=true'
+                failed: 'in-memory://'

@@ -49,7 +49,7 @@ src/
 make up          # docker compose up -d
 make sh          # shell в php-контейнере
 make migrate     # doctrine:migrations:migrate
-make consume     # messenger:consume async heartbeat scheduler_default
+make consume     # messenger:consume courses time heartbeat scheduler_default
 make test        # phpunit
 make check       # phpstan + cs-fixer --dry-run + phpunit
 make emulate     # bin/console app:emulate-events — сгенерировать поток событий для одного ученика
