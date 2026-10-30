@@ -40,7 +40,7 @@
 ## 7. Сквозная проверка
 
 - [x] 7.1 Функциональный тест: in-memory транспорт с `EnvelopeSerializer` + тестовый хендлер — валидное событие обработано один раз при двойной доставке; невалидное попало в `failed` без ретраев; проверка: `make test`
-- [ ] 7.2 Ручная проверка на брокере: опубликовать в `courses.events` через management API валидный `task.completed`, невалидный JSON и `quiz.answered`; `make consume`; ожидается: первые два — в `messenger:failed:show` (у первого пока нет хендлера — после 3 ретраев, у второго — сразу), `quiz.answered` в очереди `diagnostics.courses` не появился. Записать команды в описание PR
+- [x] 7.2 Ручная проверка на брокере: опубликовать в `courses.events` через management API валидный `task.completed`, невалидный JSON и `quiz.answered`; `make consume`; ожидается: первые два — в `messenger:failed:show` (у первого пока нет хендлера — после 3 ретраев, у второго — сразу), `quiz.answered` в очереди `diagnostics.courses` не появился. Записать команды в описание PR
 
 ## Workflow follow-up
 
