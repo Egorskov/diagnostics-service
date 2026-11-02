@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\Event\Incoming;
 
 use App\Application\Event\Incoming\ActivityHeartbeat;
-use App\Application\Event\Incoming\ActivitySource;
-use App\Application\Event\Incoming\SandboxResult;
 use App\Application\Event\Incoming\SandboxRun;
-use App\Application\Event\Incoming\TimeCategory;
 use App\Application\Event\Incoming\TimeLogged;
 use App\Application\Event\IncomingEvent;
 use App\Application\Event\InvalidPayload;
+use App\Domain\Progress\ActivitySource;
+use App\Domain\Progress\SandboxResult;
+use App\Domain\Progress\TimeCategory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
