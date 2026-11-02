@@ -7,6 +7,7 @@ namespace App\Application\Event\Incoming;
 use App\Application\Event\EventMetadata;
 use App\Application\Event\IncomingEvent;
 use App\Application\Event\PayloadReader;
+use App\Domain\Progress\ActivitySource;
 
 /**
  * `activity.heartbeat` v1 — раз в 60 с, пока вкладка активна. Момент активности — `metadata()->occurredAt`.

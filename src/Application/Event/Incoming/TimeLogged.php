@@ -7,6 +7,7 @@ namespace App\Application\Event\Incoming;
 use App\Application\Event\EventMetadata;
 use App\Application\Event\IncomingEvent;
 use App\Application\Event\PayloadReader;
+use App\Domain\Progress\TimeCategory;
 
 /**
  * `time.logged` v1 — ученик списал время вручную (владелец сервиса — SPEC §11, вопрос 1).

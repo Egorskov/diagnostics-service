@@ -7,6 +7,7 @@ namespace App\Application\Event\Incoming;
 use App\Application\Event\EventMetadata;
 use App\Application\Event\IncomingEvent;
 use App\Application\Event\PayloadReader;
+use App\Domain\Progress\SandboxResult;
 
 /**
  * `sandbox.run` v1 — запуск решения в песочнице.

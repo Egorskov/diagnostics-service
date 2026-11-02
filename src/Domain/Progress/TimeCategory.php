@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Event\Incoming;
+namespace App\Domain\Progress;
 
 /**
  * Категория списанного времени (asyncapi.yaml → TimeLogged.category).
