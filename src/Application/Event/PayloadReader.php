@@ -37,8 +37,9 @@ final readonly class PayloadReader
         if (null === $value) {
             return null;
         }
-        if (!\is_string($value) || '' === $value) {
-            throw $this->invalid($key, 'must be a non-empty string');
+        // пустая строка допустима: в asyncapi.yaml нет minLength; UUID, enum и даты проверяются отдельно
+        if (!\is_string($value)) {
+            throw $this->invalid($key, 'must be a string');
         }
 
         return $value;
