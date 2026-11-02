@@ -32,8 +32,8 @@
 ## 5. Сквозная проверка
 
 - [x] 5.1 Удалить `RecordingEventHandler` и его запись в `config/services_test.yaml`; перевести `EventIngestionTest` на настоящие хендлеры: двойная доставка `task.completed` меняет прогресс один раз, очистка таблиц прогресса в `setUp`; проверка: `make test`
-- [ ] 5.2 Функциональный тест потока через воркер и in-memory транспорт: `path.assigned` → `task.started` → `sandbox.run` (`failed`) → `time.logged` → `task.completed` → `activity.heartbeat`; проверка: итоговые строки в таблицах соответствуют сценариям спеки, `failed` транспорт пуст
-- [ ] 5.3 Функциональный тест: `sandbox.run` по неизвестному заданию не оставляет строк в `sandbox_run` и `inbox_event` и уходит на повтор; после обработки `path.assigned` повтор проходит; проверка: `make test`
+- [x] 5.2 Функциональный тест потока через воркер и in-memory транспорт: `path.assigned` → `task.started` → `sandbox.run` (`failed`) → `time.logged` → `task.completed` → `activity.heartbeat`; проверка: итоговые строки в таблицах соответствуют сценариям спеки, `failed` транспорт пуст
+- [x] 5.3 Функциональный тест: `sandbox.run` по неизвестному заданию не оставляет строк в `sandbox_run` и `inbox_event` и уходит на повтор; после обработки `path.assigned` повтор проходит; проверка: `make test`
 - [ ] 5.4 Ручная проверка на брокере: опубликовать через management API тот же поток в `courses.events`, `time.events`, `activity.events`; `make consume`; ожидается: `messenger:failed:show` пуст, строки в таблицах по сценарию; затем `sandbox.run` по неизвестному заданию после 3 ретраев виден в `messenger:failed:show`. Команды записать в описание PR
 
 ## Workflow follow-up
