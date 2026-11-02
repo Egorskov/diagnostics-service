@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Domain\Progress\TimeLog" table="time_log">
+        <id name="id" type="integer">
+            <generator strategy="AUTO"/>
+        </id>
+        <field name="studentId" type="guid"/>
+        <field name="taskId" type="guid" nullable="true"/>
+        <field name="category" type="string" length="20" enum-type="App\Domain\Progress\TimeCategory"/>
+        <field name="minutes" type="integer"/>
+        <field name="loggedForDate" type="date_immutable"/>
+        <field name="sourceEventId" type="guid"/>
+    </entity>
+</doctrine-mapping>

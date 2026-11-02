@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Domain\Progress\TaskProgress" table="task_progress">
+        <id name="studentId" type="guid"/>
+        <id name="taskId" type="guid"/>
+        <field name="pathId" type="guid"/>
+        <field name="status" type="string" length="20" enum-type="App\Domain\Progress\TaskStatus"/>
+        <field name="startedAt" type="datetime_immutable" nullable="true"/>
+        <field name="completedAt" type="datetime_immutable" nullable="true"/>
+        <field name="activeMinutes" type="integer"/>
+        <field name="failedRuns" type="integer"/>
+        <field name="maxHintLevel" type="integer"/>
+    </entity>
+</doctrine-mapping>

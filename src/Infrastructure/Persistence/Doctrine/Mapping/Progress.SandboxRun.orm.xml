@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Domain\Progress\SandboxRun" table="sandbox_run">
+        <id name="runId" type="guid"/>
+        <field name="studentId" type="guid"/>
+        <field name="taskId" type="guid"/>
+        <field name="result" type="string" length="20" enum-type="App\Domain\Progress\SandboxResult"/>
+        <!-- text: контракт не ограничивает длину error_type -->
+        <field name="errorType" type="text" nullable="true"/>
+        <field name="occurredAt" type="datetime_immutable"/>
+    </entity>
+</doctrine-mapping>
