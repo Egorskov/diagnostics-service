@@ -27,7 +27,7 @@
 ## 5. Сквозная проверка
 
 - [x] 5.1 Функциональный тест через воркер и БД: `task.started` как первое событие даёт `active_minutes` = 1 (прогресс и сессия в одной транзакции до `flush`); два heartbeat с интервалом 60 с и один через 16 минут дают две сессии и сумму; heartbeat по заданию без прогресса сохраняет сессию; без строки порога событие не отмечается в inbox и уходит на повтор; проверка: `make test`
-- [ ] 5.2 Ручная проверка на брокере: опубликовать через management API `path.assigned`, `task.started` и heartbeat по заданию; `make consume`; ожидается: `activity_session` и `active_minutes` по сценарию, `messenger:failed:show` пуст. Команды записать в описание PR
+- [x] 5.2 Ручная проверка на брокере: опубликовать через management API `path.assigned`, `task.started` и heartbeat по заданию; `make consume`; ожидается: `activity_session` и `active_minutes` по сценарию, `messenger:failed:show` пуст. Команды записать в описание PR
 
 ## Workflow follow-up
 
