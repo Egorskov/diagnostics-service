@@ -18,7 +18,7 @@
 ## 3. Хранение (Infrastructure)
 
 - [x] 3.1 XML-маппинг `ActivitySession` с индексом `(student_id, task_id, last_seen_at)`; `make diff` генерирует миграцию; проверка: `make migrate`, `doctrine:schema:validate` без ошибок, `doctrine:migrations:diff` сообщает «no changes». Коммит включает сгенерированную миграцию без ручных правок
-- [ ] 3.2 Порт и репозиторий `ActivitySessionRepository` (`forTask`, `withoutTaskNear`, `add`); проверка: интеграционный тест — сессии чужого ученика и задания не попадают в выборку, `withoutTaskNear` учитывает границы окна и не возвращает сессии с заданием
+- [x] 3.2 Порт и репозиторий `ActivitySessionRepository` (`forTask`, `withoutTaskNear`, `add`); проверка: интеграционный тест — сессии чужого ученика и задания не попадают в выборку, `withoutTaskNear` учитывает границы окна и не возвращает сессии с заданием
 
 ## 4. Сессионизация (Application)
 
