@@ -76,6 +76,36 @@ final class DoctrineProgressRepositoriesTest extends KernelTestCase
         });
     }
 
+    public function testRepeatedFindForUpdateKeepsUnsavedChanges(): void
+    {
+        $repository = new DoctrineTaskProgressRepository($this->entityManager);
+        $repository->add(new TaskProgress(self::STUDENT, self::TASK, self::PATH));
+        $this->save();
+
+        $this->entityManager->wrapInTransaction(static function () use ($repository): void {
+            $progress = $repository->findForUpdate(self::STUDENT, self::TASK);
+            self::assertNotNull($progress);
+            $progress->recordFailedRun();
+
+            self::assertSame($progress, $repository->findForUpdate(self::STUDENT, self::TASK));
+            self::assertSame(1, $progress->failedRuns());
+        });
+    }
+
+    public function testFindForUpdateSeesProgressCreatedInSameTransaction(): void
+    {
+        $repository = new DoctrineTaskProgressRepository($this->entityManager);
+
+        $this->entityManager->wrapInTransaction(static function () use ($repository): void {
+            $progress = new TaskProgress(self::STUDENT, self::TASK, self::PATH);
+            $progress->recordFailedRun();
+            $repository->add($progress);
+
+            self::assertSame($progress, $repository->findForUpdate(self::STUDENT, self::TASK));
+            self::assertSame(1, $progress->failedRuns());
+        });
+    }
+
     public function testTimeLogKeepsDayAndAllowsEmptyTask(): void
     {
         $repository = new DoctrineTimeLogRepository($this->entityManager);
