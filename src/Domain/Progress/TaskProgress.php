@@ -45,6 +45,14 @@ class TaskProgress
         ++$this->failedRuns;
     }
 
+    /**
+     * Сумма длительностей сессий задания (SPEC §6.1, п. 5).
+     */
+    public function updateActiveMinutes(int $minutes): void
+    {
+        $this->activeMinutes = $minutes;
+    }
+
     public function studentId(): string
     {
         return $this->studentId;
