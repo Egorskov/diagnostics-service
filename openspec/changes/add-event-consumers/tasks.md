@@ -6,7 +6,7 @@
 
 ## 1. Решение и подготовка
 
-- [ ] 1.1 Написать `docs/adr/0003-event-ordering.md`: прогресс не зависит от порядка событий, статус только вперёд, раннее время побеждает; событие без контекста — ошибка обработки → ретраи → failure transport (design §3, §6); проверка: ADR ссылается на SPEC §6.1, §9, ADR 0002 и design.md этого change. Коммит `docs: adr 0003 event ordering`
+- [x] 1.1 Написать `docs/adr/0003-event-ordering.md`: прогресс не зависит от порядка событий, статус только вперёд, раннее время побеждает; событие без контекста — ошибка обработки → ретраи → failure transport (design §3, §6); проверка: ADR ссылается на SPEC §6.1, §9, ADR 0002 и design.md этого change. Коммит `docs: adr 0003 event ordering`
 - [ ] 1.2 Перенести `TimeCategory`, `SandboxResult`, `ActivitySource` в `src/Domain/Progress/`, обновить импорты DTO и тестов; проверка: `make check` зелёный без изменения поведения. Коммит `refactor: move progress enums to domain`
 
 ## 2. Домен (чистый PHP)
