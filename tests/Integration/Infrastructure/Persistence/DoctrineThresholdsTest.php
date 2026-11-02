@@ -24,7 +24,6 @@ final class DoctrineThresholdsTest extends KernelTestCase
         self::bootKernel();
         $this->connection = self::getContainer()->get(Connection::class);
         $this->connection->beginTransaction();
-        $this->connection->executeStatement("DELETE FROM threshold WHERE key = 'idle_timeout_min'");
         $this->thresholds = new DoctrineThresholds(self::getContainer()->get(EntityManagerInterface::class));
     }
 
@@ -34,15 +33,27 @@ final class DoctrineThresholdsTest extends KernelTestCase
         parent::tearDown();
     }
 
-    public function testReadsNumber(): void
+    private function setIdleTimeout(string $value): void
     {
-        $this->connection->insert('threshold', ['key' => 'idle_timeout_min', 'value' => '30']);
+        $this->connection->update('threshold', ['value' => $value], ['key' => 'idle_timeout_min']);
+    }
+
+    public function testInitialValueComesFromMigration(): void
+    {
+        self::assertSame(15, $this->thresholds->idleTimeoutMinutes());
+    }
+
+    public function testReadsChangedNumber(): void
+    {
+        $this->setIdleTimeout('30');
 
         self::assertSame(30, $this->thresholds->idleTimeoutMinutes());
     }
 
     public function testMissingThresholdIsError(): void
     {
+        $this->connection->delete('threshold', ['key' => 'idle_timeout_min']);
+
         $this->expectException(InvalidThreshold::class);
 
         $this->thresholds->idleTimeoutMinutes();
@@ -51,7 +62,7 @@ final class DoctrineThresholdsTest extends KernelTestCase
     #[DataProvider('invalidValues')]
     public function testInvalidValueIsError(string $value): void
     {
-        $this->connection->insert('threshold', ['key' => 'idle_timeout_min', 'value' => $value]);
+        $this->setIdleTimeout($value);
 
         $this->expectException(InvalidThreshold::class);
 

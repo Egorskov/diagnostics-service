@@ -8,7 +8,7 @@
 
 - [x] 1.1 Написать `docs/adr/0004-thresholds.md`: таблица `threshold`, значение как текст, типизированный порт, чтение без кеша, ошибка вместо значения из кода, миграция с данными как единственное исключение из правила diff (design §6, §7); проверка: ADR ссылается на SPEC §5, §7.1, ADR 0003 и design.md этого change. Коммит `docs: adr 0004 thresholds`
 - [x] 1.2 Сущность `Threshold`, XML-маппинг, порт `Thresholds`, Doctrine-реализация с ошибкой при отсутствии и нечисловом значении; `make diff` генерирует миграцию схемы; проверка: `make migrate`, `doctrine:schema:validate` без ошибок; интеграционный тест: число, нет строки, не число
-- [ ] 1.3 Миграция с данными через `doctrine:migrations:generate`: `idle_timeout_min` = 15 с `ON CONFLICT DO NOTHING`; проверка: интеграционный тест читает 15 после `make test-db`, `doctrine:migrations:diff` сообщает «no changes», откат и повторное применение миграции не дают ошибок
+- [x] 1.3 Миграция с данными через `doctrine:migrations:generate`: `idle_timeout_min` = 15 с `ON CONFLICT DO NOTHING`; проверка: интеграционный тест читает 15 после `make test-db`, `doctrine:migrations:diff` сообщает «no changes», откат и повторное применение миграции не дают ошибок
 
 ## 2. Домен (чистый PHP)
 
