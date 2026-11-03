@@ -186,6 +186,35 @@ final class PathMetricsTest extends TestCase
         ];
     }
 
+    /**
+     * @param list<PlannedTask> $tasks
+     */
+    #[DataProvider('delays')]
+    public function testDelay(array $tasks, int $weeklyGoal, ?int $expected): void
+    {
+        // путь начат 2026-10-01 по Белграду больше 4 недель назад, сегодня 2026-11-03
+        $metrics = self::calculate($tasks, '2026-11-03T12:00:00Z', $weeklyGoal, '2026-09-30T22:00:00Z');
+
+        self::assertSame($expected, $metrics->delayDays);
+    }
+
+    /**
+     * @return iterable<string, array{list<PlannedTask>, int, ?int}>
+     */
+    public static function delays(): iterable
+    {
+        $inWindow = '2026-10-20T12:00:00Z';
+
+        // плановая 10-01 + 21 день = 10-22; темп 2800 / 4 = 700 в неделю, прогноз 11-03 + 17 дней = 11-20
+        yield 'отстаёт через переход на зимнее время' => [[self::done(2800, at: $inWindow), self::open(1700)], 1500, 29];
+        // плановая 10-29, путь пройден 10-20
+        yield 'опережает' => [[self::done(6000, at: $inWindow)], 1500, -9];
+        // плановая 10-01 + 14 дней = 10-15
+        yield 'пройден в плановый день' => [[self::done(3000, at: '2026-10-15T10:00:00Z')], 1500, 0];
+        yield 'прогноза нет' => [[self::open(6000)], 1500, null];
+        yield 'плановой даты нет' => [[self::done(6000, at: $inWindow)], 0, null];
+    }
+
     public function testCostIndexRoundsAsInSpecExample(): void
     {
         $metrics = self::calculate([self::done(2700, 2000), self::open(3300, 1300)], '2026-10-17T19:12:00Z');

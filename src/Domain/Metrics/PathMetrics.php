@@ -16,6 +16,8 @@ final readonly class PathMetrics
     public ?float $spi;
     /** EV / AC, не считается при AC = 0 */
     public ?float $cpi;
+    /** Прогноз − плановая дата в днях; меньше нуля — опережение */
+    public ?int $delayDays;
 
     /**
      * Даты — полночь календарного дня в зоне расчёта.
@@ -29,6 +31,10 @@ final readonly class PathMetrics
     ) {
         $this->spi = $plannedMinutes > 0 ? $earnedMinutes / $plannedMinutes : null;
         $this->cpi = $actualMinutes > 0 ? $earnedMinutes / $actualMinutes : null;
+        // разность календарных дат, а не секунд: переход на летнее время не сдвигает дни
+        $this->delayDays = null !== $plannedFinish && null !== $forecastFinish
+            ? (int) $plannedFinish->diff($forecastFinish)->format('%r%a')
+            : null;
     }
 
     public static function calculate(PathPlan $plan, \DateTimeImmutable $now, \DateTimeZone $zone): self
