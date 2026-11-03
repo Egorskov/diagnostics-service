@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
+use App\Application\Signal\EscalateStuckTasks;
 use App\Tests\Support\EventFlowTestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * task.stuck через настоящий воркер: событие → прогресс → signal_state + outbox → relay → signals.
  */
 final class TaskStuckFlowTest extends EventFlowTestCase
 {
+    use ClockSensitiveTrait;
+
     private const STUDENT = '11111111-1111-4111-8111-111111111111';
     private const PATH = '22222222-2222-4222-8222-222222222222';
     private const TASK = '33333333-3333-4333-8333-333333333333';
@@ -22,6 +27,8 @@ final class TaskStuckFlowTest extends EventFlowTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // сигнал ученику публикуется в этот момент, от него отсчитывается эскалация
+        self::mockTime(new \DateTimeImmutable('2026-11-03T10:00:00Z'));
         self::deliver('courses', $this->courseEvent('path.assigned', [
             'student_id' => self::STUDENT,
             'path_id' => self::PATH,
@@ -157,5 +164,43 @@ final class TaskStuckFlowTest extends EventFlowTestCase
         self::assertSame($inbox, $this->rowCount('inbox_event'));
         self::assertSame(0, $this->rowCount('signal_state'));
         self::assertSame([], self::transport('failed')->getSent());
+    }
+
+    /**
+     * @return list<string> аудитории сигналов, опубликованных эскалацией
+     */
+    private function escalateAt(string $now): array
+    {
+        self::mockTime(new \DateTimeImmutable($now));
+        $before = \count(self::transport('signals')->getSent());
+        self::getContainer()->get(MessageBusInterface::class)->dispatch(new EscalateStuckTasks());
+        self::consume(10, ['outbox']);
+
+        return array_map(static fn ($signal) => $signal->payload['audience'], \array_slice(self::publishedSignals(), $before));
+    }
+
+    public function testEscalationAfterDayGoesToMentorOnce(): void
+    {
+        $this->heartbeatsUntil('2026-10-30T11:30:00Z');
+        self::consume(1, ['outbox']);
+
+        self::assertSame([], $this->escalateAt('2026-11-04T09:59:59Z'));
+        self::assertSame(['mentor'], $this->escalateAt('2026-11-04T10:00:00Z'));
+        self::assertSame([], $this->escalateAt('2026-11-04T11:00:00Z'));
+
+        $mentorSignal = self::publishedSignals()[1];
+        self::assertSame(self::MENTOR, $mentorSignal->payload['mentor_id']);
+        self::assertSame('time_exceeded', $mentorSignal->payload['reason']);
+        self::assertNull($mentorSignal->correlationId);
+    }
+
+    public function testNoEscalationAfterCompletion(): void
+    {
+        $this->heartbeatsUntil('2026-10-30T11:30:00Z');
+        self::deliver('courses', $this->courseEvent('task.completed', ['student_id' => self::STUDENT, 'path_id' => self::PATH, 'task_id' => self::TASK], '2026-10-30T11:40:00Z'));
+        self::consume(1);
+        self::consume(1, ['outbox']);
+
+        self::assertSame([], $this->escalateAt('2026-11-04T10:00:00Z'));
     }
 }
