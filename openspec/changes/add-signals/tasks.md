@@ -4,7 +4,7 @@
 
 ## 1. Основа
 
-- [ ] 1.1 Зависимость `symfony/uid` 7.4 для `event_id` сигналов (design, решение 9). Проверка: `composer.json` и `composer.lock` обновлены, `make check` зелёный; коммит `build: add symfony/uid for outgoing event ids`
+- [x] 1.1 Зависимость `symfony/uid` 7.4 для `event_id` сигналов (design, решение 9). Проверка: `composer.json` и `composer.lock` обновлены, `make check` зелёный; коммит `build: add symfony/uid for outgoing event ids`
 - [ ] 1.2 ADR `docs/adr/0005-signals-outbox.md`: outbox на Doctrine-транспорте, конверт и маршрутизация сигналов, at-least-once, ключ `signal_state`, семантика перехода (design, решения 2, 3, 6, 7). Проверка: ADR ссылается на SPEC §7.3, §9 и ADR 0002, 0004; коммит `docs: ADR 0005 signals and outbox`
 
 ## 2. Пороги
