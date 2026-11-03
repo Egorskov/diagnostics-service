@@ -4,7 +4,7 @@
 
 ## 1. Входные данные
 
-- [ ] 1.1 `PlannedTask` и `PathPlan` в `src/Domain/Metrics/` (design, решения 1–2): неизменяемые, оценка задания ≥ 1, списанные минуты ≥ 0, список заданий типизирован для PHPStan. Проверка: юнит-тест на конструирование и отказ при оценке 0 или отрицательных минутах; `make check`; коммит `feat: path metrics input value objects`
+- [x] 1.1 `PlannedTask` и `PathPlan` в `src/Domain/Metrics/` (design, решения 1–2): неизменяемые, оценка задания ≥ 1, списанные минуты ≥ 0, список заданий типизирован для PHPStan. Проверка: юнит-тест на конструирование и отказ при оценке 0 или отрицательных минутах; `make check`; коммит `feat: path metrics input value objects`
 
 ## 2. EV, PV, AC
 
