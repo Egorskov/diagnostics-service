@@ -24,7 +24,7 @@ abstract class EventFlowTestCase extends KernelTestCase
     {
         self::bootKernel();
         $this->connection = self::getContainer()->get(Connection::class);
-        foreach (['inbox_event', 'student_path', 'path_task', 'task_progress', 'time_log', 'sandbox_run'] as $table) {
+        foreach (['inbox_event', 'student_path', 'path_task', 'task_progress', 'time_log', 'sandbox_run', 'activity_session'] as $table) {
             $this->connection->executeStatement('DELETE FROM '.$table);
         }
     }

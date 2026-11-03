@@ -60,6 +60,19 @@ final class TaskProgressTest extends TestCase
         yield 'повторное завершение раньше' => [[['complete', self::LATE], ['complete', self::EARLY]], TaskStatus::Completed, null, self::EARLY];
     }
 
+    public function testUpdateActiveMinutesChangesOnlyThem(): void
+    {
+        $progress = new TaskProgress('student', 'task', 'path');
+        $progress->start(new \DateTimeImmutable(self::EARLY));
+        $progress->recordFailedRun();
+
+        $progress->updateActiveMinutes(8);
+
+        self::assertSame(8, $progress->activeMinutes());
+        self::assertSame(TaskStatus::InProgress, $progress->status());
+        self::assertSame(1, $progress->failedRuns());
+    }
+
     #[DataProvider('statusesForFailedRun')]
     public function testFailedRunDoesNotChangeStatus(?string $event, TaskStatus $status): void
     {

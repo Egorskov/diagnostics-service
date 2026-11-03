@@ -96,7 +96,8 @@ final class ProgressFlowTest extends EventFlowTestCase
             'status' => 'completed',
             'started_at' => '2026-10-30 12:00:00',
             'completed_at' => '2026-10-30 12:30:00',
-            'active_minutes' => 0,
+            // сессии 12:00–12:10 (11 мин) и 12:30 (1 мин): между ними больше таймаута в 15 минут
+            'active_minutes' => 12,
             'failed_runs' => 1,
             'max_hint_level' => 0,
         ]], $this->connection->fetchAllAssociative('SELECT student_id, task_id, path_id, status, started_at, completed_at, active_minutes, failed_runs, max_hint_level FROM task_progress'));

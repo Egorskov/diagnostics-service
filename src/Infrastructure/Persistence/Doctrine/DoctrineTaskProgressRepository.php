@@ -20,7 +20,16 @@ final readonly class DoctrineTaskProgressRepository implements TaskProgressRepos
 
     public function findForUpdate(string $studentId, string $taskId): ?TaskProgress
     {
-        return $this->entityManager->find(TaskProgress::class, ['studentId' => $studentId, 'taskId' => $taskId], LockMode::PESSIMISTIC_WRITE);
+        $id = ['studentId' => $studentId, 'taskId' => $taskId];
+
+        // find() с блокировкой перечитал бы уже загруженную сущность из базы и стёр несохранённые
+        // изменения хендлера. Такая сущность уже заблокирована в этой транзакции или только что создана.
+        $managed = $this->entityManager->getUnitOfWork()->tryGetById($id, TaskProgress::class);
+        if ($managed instanceof TaskProgress) {
+            return $managed;
+        }
+
+        return $this->entityManager->find(TaskProgress::class, $id, LockMode::PESSIMISTIC_WRITE);
     }
 
     public function add(TaskProgress $progress): void
