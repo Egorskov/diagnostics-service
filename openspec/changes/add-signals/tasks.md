@@ -14,7 +14,7 @@
 
 ## 3. Состояние сигнала
 
-- [ ] 3.1 `SignalType`, `Audience`, `SignalKey`, `SignalState::observe()` в `src/Domain/Signal/` (design, решения 2–3). Проверка: табличный юнит-тест переходов ложь/истина, повтор, сброс, новый переход и неизменный `first_emitted_at`; `make check`; коммит `feat: signal state transitions`
+- [x] 3.1 `SignalType`, `Audience`, `SignalKey`, `SignalState::observe()` в `src/Domain/Signal/` (design, решения 2–3). Проверка: табличный юнит-тест переходов ложь/истина, повтор, сброс, новый переход и неизменный `first_emitted_at`; `make check`; коммит `feat: signal state transitions`
 - [ ] 3.2 XML-маппинг `signal_state`, миграция через `make diff`, порт `SignalStateRepository` и Doctrine-реализация (поиск по ключу, активные `task.stuck` для эскалации). Проверка: интеграционный тест на сохранение, поиск и выборку для эскалации; `make check`; коммит `feat: signal state persistence`
 
 ## 4. Публикация
