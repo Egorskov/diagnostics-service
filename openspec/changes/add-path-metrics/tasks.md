@@ -22,7 +22,7 @@
 
 ## 5. Проверка целиком
 
-- [ ] 5.1 Сквозной тест на пример ответа SPEC §8: один `PathPlan` даёт `ev 2700, pv 3600, ac 3300`, `spi` 0,75, `cpi` 0,82 после округления до сотых и согласованные плановую дату, прогноз и отставание. Проверка: тест зелёный, `make check` и `openspec validate add-path-metrics --strict` проходят; коммит `test: path metrics against spec example`
+- [x] 5.1 Сквозной тест на пример ответа SPEC §8: один `PathPlan` даёт `ev 2700, pv 3600, ac 3300`, `spi` 0,75, `cpi` 0,82 после округления до сотых и согласованные плановую дату, прогноз и отставание. Проверка: тест зелёный, `make check` и `openspec validate add-path-metrics --strict` проходят; коммит `test: path metrics against spec example`
 
 ## Workflow follow-up
 

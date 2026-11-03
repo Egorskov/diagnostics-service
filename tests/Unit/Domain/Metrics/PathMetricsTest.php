@@ -215,6 +215,33 @@ final class PathMetricsTest extends TestCase
         yield 'плановой даты нет' => [[self::done(6000, at: $inWindow)], 0, null];
     }
 
+    /**
+     * Ответ `GET /students/{id}/summary` из SPEC §8 целиком: путь начат 2026-10-19 по Белграду,
+     * прошло 16,8 суток (2,4 недели), закрыто 2700 из 15000 минут.
+     */
+    public function testWholeSpecExample(): void
+    {
+        $metrics = PathMetrics::calculate(
+            new PathPlan(new \DateTimeImmutable('2026-10-18T22:00:00Z'), 1500, [
+                self::done(2700, 2000, '2026-10-30T10:00:00Z'),
+                self::open(12300, 1300),
+            ]),
+            new \DateTimeImmutable('2026-11-04T17:12:00Z'),
+            new \DateTimeZone('Europe/Belgrade'),
+        );
+
+        self::assertSame(2700, $metrics->earnedMinutes);
+        self::assertSame(3600, $metrics->plannedMinutes);
+        self::assertSame(3300, $metrics->actualMinutes);
+        self::assertNotNull($metrics->spi);
+        self::assertNotNull($metrics->cpi);
+        self::assertSame(0.75, round($metrics->spi, 2));
+        self::assertSame(0.82, round($metrics->cpi, 2));
+        self::assertSame('2026-12-28', $metrics->plannedFinish?->format('Y-m-d'));
+        self::assertSame('2027-01-20', $metrics->forecastFinish?->format('Y-m-d'));
+        self::assertSame(23, $metrics->delayDays);
+    }
+
     public function testCostIndexRoundsAsInSpecExample(): void
     {
         $metrics = self::calculate([self::done(2700, 2000), self::open(3300, 1300)], '2026-10-17T19:12:00Z');
