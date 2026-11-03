@@ -8,7 +8,7 @@
 
 ## 2. EV, PV, AC
 
-- [ ] 2.1 `PathMetrics::calculate(PathPlan, now, zone)` с `EV`, `PV`, `AC` (требования «Освоено», «План», «Факт», design, решение 4). Проверка: табличный тест `tests/Unit/Domain/Metrics/PathMetricsTest.php` по всем сценариям требования, включая границу `now` = `started_at` и неполную минуту плана; `make check`; коммит `feat: earned, planned and actual minutes`
+- [x] 2.1 `PathMetrics::calculate(PathPlan, now, zone)` с `EV`, `PV`, `AC` (требования «Освоено», «План», «Факт», design, решение 4). Проверка: табличный тест `tests/Unit/Domain/Metrics/PathMetricsTest.php` по всем сценариям требования, включая границу `now` = `started_at` и неполную минуту плана; `make check`; коммит `feat: earned, planned and actual minutes`
 
 ## 3. SPI и CPI
 
