@@ -65,6 +65,8 @@
 ### 6. Outbox — Doctrine-транспорт Messenger
 `SignalOutbox` реализуется отправкой `OutgoingSignal` в транспорт `outbox` (`doctrine://default?queue_name=outbox&auto_setup=0`, таблица `messenger_messages`). Doctrine-транспорт пишет через то же соединение, поэтому `INSERT` попадает в транзакцию хендлера или проверки: откат убирает и `signal_state`, и сигнал. Relay — хендлер `OutgoingSignal` на транспорте `outbox`: он вызывает `SignalPublisher`, а тот отправляет конверт в AMQP-транспорт `signals` (exchange `diagnostics.events`, `topic`) с `AmqpStamp(routing key = event_type)`. Ретраи (3 попытки, 1 → 2 → 4 с) и failure transport — штатные Messenger, как у входящих событий (ADR 0002).
 
+Транспорт настроен с `use_notify=false`. На PostgreSQL Doctrine-транспорт по умолчанию ждёт `LISTEN/NOTIFY`, когда очередь опустела, а триггер для `NOTIFY` создаётся только при `auto_setup`, который у нас выключен (таблица — из миграции). Без триггера новые и отложенные сообщения проверялись бы раз в `check_delayed_interval` (60 с): сигнал задерживался бы до минуты, а ретрай через 1 с — тоже до минуты. Нашёл функциональный тест ретрая (задача 4.2). Обычный опрос раз в секунду (`sleep` воркера) проще и не требует триггера вне миграций.
+
 Тело в брокере — JSON конверта: его пишет `SignalSerializer`, а `decode()` не поддерживается, потому что свои сигналы мы не читаем. В `outbox` сообщение лежит в формате PHP-сериализатора: это внутренний транспорт.
 
 *Альтернатива:* своя таблица `outbox` и команда-поллер с `FOR UPDATE SKIP LOCKED`. Даёт явную схему, но повторяет ретраи, failure transport и воркер, которые Messenger уже даёт.

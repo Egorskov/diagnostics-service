@@ -45,7 +45,7 @@ diff: ## Сгенерировать миграцию по изменениям �
 	$(PHP) bin/console doctrine:migrations:diff
 
 consume: ## Запустить воркер Messenger (heartbeat последним — его поток не задерживает остальные)
-	$(PHP) bin/console messenger:consume courses time heartbeat scheduler_default -vv
+	$(PHP) bin/console messenger:consume courses time outbox heartbeat scheduler_default -vv
 
 emulate: ## Сгенерировать поток событий для ученика (шаг 8 MVP); аргументы: make emulate ARGS="..."
 	$(PHP) bin/console app:emulate-events $(ARGS)

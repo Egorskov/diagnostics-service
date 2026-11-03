@@ -20,7 +20,7 @@
 ## 4. Публикация
 
 - [x] 4.1 `OutgoingSignal` — конверт по `asyncapi.yaml → Envelope` с `event_id` UUID v7 и правилом `correlation_id` (требование «Конверт сигнала», design, решение 7). Проверка: юнит-тест на поля конверта для сигнала из события (с `correlation_id` и без) и из расписания; `make check`; коммит `feat: outgoing signal envelope`
-- [ ] 4.2 Транспорты `outbox` (Doctrine) и `signals` (AMQP, `diagnostics.events`), `SignalSerializer`, relay-хендлер и `SignalPublisher`; `outbox` в `make consume` и in-memory в тестах (требование «Relay в exchange сигналов», design, решение 6). Проверка: функциональный тест — сигнал из `outbox` попадает в `signals` с routing key = `event_type` и телом-конвертом, падение отправки уходит в ретраи; `make check`; коммит `feat: outbox relay to diagnostics.events`
+- [x] 4.2 Транспорты `outbox` (Doctrine) и `signals` (AMQP, `diagnostics.events`), `SignalSerializer`, relay-хендлер и `SignalPublisher`; `outbox` в `make consume` и in-memory в тестах (требование «Relay в exchange сигналов», design, решение 6). Проверка: функциональный тест — сигнал из `outbox` попадает в `signals` с routing key = `event_type` и телом-конвертом, падение отправки уходит в ретраи; `make check`; коммит `feat: outbox relay to diagnostics.events`
 - [ ] 4.3 `SignalEmitter`: переход состояния и запись в outbox в одной транзакции (требования «Дедупликация по переходу состояния», «Outbox в одной транзакции»). Проверка: функциональный тест — откат транзакции не оставляет ни состояния, ни записи outbox; повторная истина не пишет второй сигнал; `make check`; коммит `feat: emit signals on state transitions`
 
 ## 5. Правила

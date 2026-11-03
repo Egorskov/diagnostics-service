@@ -49,8 +49,28 @@ framework:
                         diagnostics.heartbeat:
                             binding_keys: [activity.heartbeat]
 
+            # Outbox сигналов (ADR 0005, п. 3): Doctrine-транспорт пишет через то же соединение,
+            # поэтому сигнал коммитится вместе с signal_state. Читает его relay (RelaySignalHandler).
+            # use_notify=false: LISTEN/NOTIFY требует триггер из auto_setup, без него опустевшая очередь
+            # проверялась бы раз в check_delayed_interval (60 с); опрос раз в секунду проще и предсказуем.
+            outbox:
+                dsn: 'doctrine://default?queue_name=outbox&auto_setup=0'
+                options: { use_notify: false }
+                retry_strategy: { max_retries: 3, delay: 1000, multiplier: 2 }
+
+            # Только отправка в exchange сигналов: свои сигналы мы не читаем, поэтому очередей нет
+            signals:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: App\Infrastructure\Messenger\SignalSerializer
+                options:
+                    exchange: { name: diagnostics.events, type: topic }
+                    queues: []
+
             # таблица messenger_messages создаётся миграцией, а не транспортом
             failed: 'doctrine://default?queue_name=failed&auto_setup=0'
+
+        routing:
+            App\Application\Signal\OutgoingSignal: outbox
 
 when@test:
     framework:
@@ -61,4 +81,6 @@ when@test:
                 courses: 'in-memory://'
                 time: 'in-memory://'
                 heartbeat: 'in-memory://'
+                # outbox остаётся в тестовой базе: тесты проверяют, что он откатывается вместе с транзакцией
+                signals: 'in-memory://'
                 failed: 'in-memory://'

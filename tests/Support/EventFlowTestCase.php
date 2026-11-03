@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Support;
 
+use App\Application\Signal\OutgoingSignal;
 use App\Infrastructure\Messenger\EnvelopeSerializer;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 
 /**
@@ -24,9 +27,11 @@ abstract class EventFlowTestCase extends KernelTestCase
     {
         self::bootKernel();
         $this->connection = self::getContainer()->get(Connection::class);
-        foreach (['inbox_event', 'student_path', 'path_task', 'task_progress', 'time_log', 'sandbox_run', 'activity_session'] as $table) {
+        foreach (['inbox_event', 'student_path', 'path_task', 'task_progress', 'time_log', 'sandbox_run', 'activity_session', 'signal_state'] as $table) {
             $this->connection->executeStatement('DELETE FROM '.$table);
         }
+        $this->connection->executeStatement("DELETE FROM messenger_messages WHERE queue_name = 'outbox'");
+        FlakySignalPublisher::$failures = 0;
     }
 
     protected static function transport(string $name): InMemoryTransport
@@ -69,6 +74,27 @@ abstract class EventFlowTestCase extends KernelTestCase
         $application = new Application(self::$kernel ?? throw new \LogicException('Kernel is not booted'));
         $tester = new CommandTester($application->find('messenger:consume'));
         $tester->execute(['receivers' => $receivers, '--limit' => $messages, '--time-limit' => 5, '--no-reset' => true]);
+    }
+
+    /**
+     * Сигналы, которые relay отправил в exchange diagnostics.events.
+     *
+     * @return list<OutgoingSignal>
+     */
+    protected static function publishedSignals(): array
+    {
+        return array_values(array_map(static function (Envelope $envelope): OutgoingSignal {
+            $signal = $envelope->getMessage();
+            self::assertInstanceOf(OutgoingSignal::class, $signal);
+            self::assertSame($signal->type->value, $envelope->last(AmqpStamp::class)?->getRoutingKey());
+
+            return $signal;
+        }, self::transport('signals')->getSent()));
+    }
+
+    protected function outboxCount(): int
+    {
+        return (int) $this->connection->fetchOne("SELECT count(*) FROM messenger_messages WHERE queue_name = 'outbox'");
     }
 
     protected function rowCount(string $table): int
