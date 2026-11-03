@@ -10,6 +10,7 @@ namespace App\Domain\Metrics;
 final readonly class PathMetrics
 {
     private const SECONDS_PER_WEEK = 7 * 24 * 3600;
+    private const PACE_WEEKS = 4;
 
     /** EV / PV, не считается при PV = 0 */
     public ?float $spi;
@@ -24,6 +25,7 @@ final readonly class PathMetrics
         public int $plannedMinutes,
         public int $actualMinutes,
         public ?\DateTimeImmutable $plannedFinish,
+        public ?\DateTimeImmutable $forecastFinish,
     ) {
         $this->spi = $plannedMinutes > 0 ? $earnedMinutes / $plannedMinutes : null;
         $this->cpi = $actualMinutes > 0 ? $earnedMinutes / $actualMinutes : null;
@@ -45,7 +47,45 @@ final readonly class PathMetrics
             min($total, self::plannedByGoal($plan, $now)),
             $actual,
             self::plannedFinish($plan, $total, $zone),
+            self::forecastFinish($plan, $total - $earned, $now, $zone),
         );
+    }
+
+    /**
+     * Сегодня + остаток / темп недель (design, решения 6–7). Темп — оценки, закрытые за последние
+     * 4 недели, на число недель окна: для пути младше 4 недель — недель с начала, но не меньше 1.
+     */
+    private static function forecastFinish(PathPlan $plan, int $remaining, \DateTimeImmutable $now, \DateTimeZone $zone): ?\DateTimeImmutable
+    {
+        if ([] === $plan->tasks) {
+            return null;
+        }
+        if (0 === $remaining) {
+            $last = max(array_map(static fn (PlannedTask $task): ?\DateTimeImmutable => $task->completedAt, $plan->tasks));
+
+            return null === $last ? null : self::day($last, $zone);
+        }
+
+        $windowStart = $now->getTimestamp() - self::PACE_WEEKS * self::SECONDS_PER_WEEK;
+        $earnedInWindow = 0;
+        foreach ($plan->tasks as $task) {
+            $completedAt = $task->completedAt?->getTimestamp();
+            if (null !== $completedAt && $completedAt >= $windowStart && $completedAt <= $now->getTimestamp()) {
+                $earnedInWindow += $task->estimateMinutes;
+            }
+        }
+        if (0 === $earnedInWindow) {
+            return null;
+        }
+
+        $windowSeconds = max(
+            self::SECONDS_PER_WEEK,
+            min(self::PACE_WEEKS * self::SECONDS_PER_WEEK, $now->getTimestamp() - $plan->startedAt->getTimestamp()),
+        );
+        // остаток × 7 / (EV окна / недель окна) — в целых числах, как и план
+        $days = self::ceilDiv($remaining * 7 * $windowSeconds, $earnedInWindow * self::SECONDS_PER_WEEK);
+
+        return self::addDays(self::day($now, $zone), $days);
     }
 
     /**
