@@ -65,4 +65,44 @@ final class PathMetricsTest extends TestCase
         yield 'отрицательная цель' => [[self::done(60)], '2026-10-22T00:00:00Z', -100, 60, 0, 0];
         yield 'пустой путь' => [[], '2026-10-22T00:00:00Z', 1500, 0, 0, 0];
     }
+
+    /**
+     * @param list<PlannedTask> $tasks
+     */
+    #[DataProvider('indexes')]
+    public function testPerformanceIndexes(array $tasks, string $now, ?float $spi, ?float $cpi): void
+    {
+        $metrics = self::calculate($tasks, $now);
+
+        if (null === $spi) {
+            self::assertNull($metrics->spi);
+        } else {
+            self::assertEqualsWithDelta($spi, $metrics->spi, 1e-9);
+        }
+        if (null === $cpi) {
+            self::assertNull($metrics->cpi);
+        } else {
+            self::assertEqualsWithDelta($cpi, $metrics->cpi, 1e-9);
+        }
+    }
+
+    /**
+     * @return iterable<string, array{list<PlannedTask>, string, ?float, ?float}>
+     */
+    public static function indexes(): iterable
+    {
+        yield 'пример SPEC §8' => [[self::done(2700, 2000), self::open(3300, 1300)], '2026-10-17T19:12:00Z', 0.75, 2700 / 3300];
+        yield 'опережение и экономия' => [[self::done(3000, 1500)], '2026-10-08T00:00:00Z', 2.0, 2.0];
+        yield 'нулевой план' => [[self::done(60, 30)], self::STARTED, null, 2.0];
+        yield 'ничего не списано' => [[self::done(60)], '2026-10-08T00:00:00Z', 1.0, null];
+        yield 'ничего не освоено' => [[self::open(60, 30)], '2026-10-08T00:00:00Z', 0.0, 0.0];
+    }
+
+    public function testCostIndexRoundsAsInSpecExample(): void
+    {
+        $metrics = self::calculate([self::done(2700, 2000), self::open(3300, 1300)], '2026-10-17T19:12:00Z');
+
+        self::assertNotNull($metrics->cpi);
+        self::assertSame(0.82, round($metrics->cpi, 2));
+    }
 }

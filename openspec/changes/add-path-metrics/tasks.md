@@ -12,7 +12,7 @@
 
 ## 3. SPI и CPI
 
-- [ ] 3.1 `SPI` и `CPI` как `?float` (требование «Темп и эффективность»). Проверка: табличный тест на пример §8 (`assertEqualsWithDelta`), нулевой `PV` и нулевой `AC`; `make check`; коммит `feat: schedule and cost performance indexes`
+- [x] 3.1 `SPI` и `CPI` как `?float` (требование «Темп и эффективность»). Проверка: табличный тест на пример §8 (`assertEqualsWithDelta`), нулевой `PV` и нулевой `AC`; `make check`; коммит `feat: schedule and cost performance indexes`
 
 ## 4. Даты
 

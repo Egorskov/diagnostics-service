@@ -11,11 +11,18 @@ final readonly class PathMetrics
 {
     private const SECONDS_PER_WEEK = 7 * 24 * 3600;
 
+    /** EV / PV, не считается при PV = 0 */
+    public ?float $spi;
+    /** EV / AC, не считается при AC = 0 */
+    public ?float $cpi;
+
     private function __construct(
         public int $earnedMinutes,
         public int $plannedMinutes,
         public int $actualMinutes,
     ) {
+        $this->spi = $plannedMinutes > 0 ? $earnedMinutes / $plannedMinutes : null;
+        $this->cpi = $actualMinutes > 0 ? $earnedMinutes / $actualMinutes : null;
     }
 
     public static function calculate(PathPlan $plan, \DateTimeImmutable $now, \DateTimeZone $zone): self
