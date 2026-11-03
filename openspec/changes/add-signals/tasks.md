@@ -35,8 +35,8 @@
 
 ## 6. Проверка целиком
 
-- [ ] 6.1 Ручная проверка на RabbitMQ: временная очередь, привязанная к `diagnostics.events` по `diagnostics.#`; поток событий доводит задание до `task.stuck`, `messenger:consume outbox` публикует сигнал с верным routing key и конвертом; failure transport пуст, тестовые строки удалены. Проверка: команды и результат — в описании PR
-- [ ] 6.2 `openspec validate add-signals --strict` проходит, итоговые требования сверены с SPEC §7 и `asyncapi.yaml`. Проверка: вывод команды; коммит `docs: mark manual signals check as done`
+- [x] 6.1 Ручная проверка на RabbitMQ: временная очередь, привязанная к `diagnostics.events` по `diagnostics.#`; поток событий доводит задание до `task.stuck`, `messenger:consume outbox` публикует сигнал с верным routing key и конвертом; failure transport пуст, тестовые строки удалены. Проверка: команды и результат — в описании PR
+- [x] 6.2 `openspec validate add-signals --strict` проходит, итоговые требования сверены с SPEC §7 и `asyncapi.yaml`. Проверка: вывод команды; коммит `docs: mark manual signals check as done`
 
 ## Workflow follow-up
 
