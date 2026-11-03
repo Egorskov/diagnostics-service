@@ -98,6 +98,35 @@ final class PathMetricsTest extends TestCase
         yield 'ничего не освоено' => [[self::open(60, 30)], '2026-10-08T00:00:00Z', 0.0, 0.0];
     }
 
+    /**
+     * @param list<PlannedTask> $tasks
+     */
+    #[DataProvider('plannedFinishes')]
+    public function testPlannedFinish(array $tasks, int $weeklyGoal, string $started, ?string $expected): void
+    {
+        $finish = self::calculate($tasks, '2026-11-03T12:00:00Z', $weeklyGoal, $started)->plannedFinish;
+
+        self::assertSame($expected, $finish?->format('Y-m-d H:i'));
+        if (null !== $finish) {
+            self::assertSame('Europe/Belgrade', $finish->getTimezone()->getName());
+        }
+    }
+
+    /**
+     * @return iterable<string, array{list<PlannedTask>, int, string, ?string}>
+     */
+    public static function plannedFinishes(): iterable
+    {
+        // 2026-10-01 00:00 по Белграду = 2026-09-30T22:00:00Z
+        $started = '2026-09-30T22:00:00Z';
+        yield 'ровно четыре недели' => [[self::open(6000)], 1500, $started, '2026-10-29 00:00'];
+        yield 'неполный день' => [[self::open(6100)], 1500, $started, '2026-10-30 00:00'];
+        yield 'нулевая цель' => [[self::open(6000)], 0, $started, null];
+        yield 'пустой путь' => [[], 1500, $started, '2026-10-01 00:00'];
+        yield 'начат перед полуночью по UTC, но уже 1 октября по Белграду' => [[self::open(6000)], 1500, '2026-09-30T22:30:00Z', '2026-10-29 00:00'];
+        yield 'начат 30 сентября по Белграду' => [[self::open(6000)], 1500, '2026-09-30T21:30:00Z', '2026-10-28 00:00'];
+    }
+
     public function testCostIndexRoundsAsInSpecExample(): void
     {
         $metrics = self::calculate([self::done(2700, 2000), self::open(3300, 1300)], '2026-10-17T19:12:00Z');
