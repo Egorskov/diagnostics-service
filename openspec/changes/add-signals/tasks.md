@@ -31,7 +31,7 @@
 - [x] 5.4 `StudentInactivityCheck` и сообщение `CheckStudentInactivity` (требование «Неактивный ученик»). Проверка: функциональный тест с фиксированными часами — 3 суток → сигнал ученику, 7 суток → ментору без повтора ученику, новая активность сбрасывает обе аудитории; `make check`; коммит `feat: student.inactive check`
 - [x] 5.5 `StuckEscalationCheck` и сообщение `EscalateStuckTasks` (требование «Застревание — эскалация ментору»). Проверка: функциональный тест — 23 и 24 часа после сигнала ученику, без повтора после эскалации, задание закрыто — эскалации нет; `make check`; коммит `feat: task.stuck escalation to mentor`
 - [x] 5.6 `WeeklyGoalCheck` и сообщение `CheckWeeklyGoals` (требование «Отставание от недельной цели»). Проверка: функциональный тест — четверг 17:00 и 18:00, 540 и 750 минут из 1500, новая неделя даёт новый сигнал, списание без задания учитывается; `make check`; коммит `feat: weekly_goal.behind check`
-- [ ] 5.7 Задачи в `DiagnosticsSchedule`: три сообщения по cron `0 * * * *` в Europe/Belgrade (design, решение 5). Проверка: юнит-тест расписания — три задачи и их ближайший запуск в зоне Belgrade; `make check`; коммит `feat: hourly signal checks in scheduler`
+- [x] 5.7 Задачи в `DiagnosticsSchedule`: три сообщения ежечасно в начале часа по Europe/Belgrade (design, решение 5). Проверка: юнит-тест расписания — три задачи и их ближайший запуск в зоне Belgrade; `make check`; коммит `feat: hourly signal checks in scheduler`
 
 ## 6. Проверка целиком
 
