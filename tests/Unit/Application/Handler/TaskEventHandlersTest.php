@@ -14,6 +14,7 @@ use App\Domain\Progress\TaskProgress;
 use App\Domain\Progress\TaskStatus;
 use App\Tests\Support\InMemoryTaskProgressRepository;
 use App\Tests\Support\RecordingActivityTracker;
+use App\Tests\Support\RecordingTaskStuckCheck;
 use PHPUnit\Framework\TestCase;
 
 final class TaskEventHandlersTest extends TestCase
@@ -22,11 +23,13 @@ final class TaskEventHandlersTest extends TestCase
 
     private InMemoryTaskProgressRepository $progress;
     private RecordingActivityTracker $activity;
+    private RecordingTaskStuckCheck $stuck;
 
     protected function setUp(): void
     {
         $this->progress = new InMemoryTaskProgressRepository();
         $this->activity = new RecordingActivityTracker();
+        $this->stuck = new RecordingTaskStuckCheck();
     }
 
     private function started(string $at = self::AT): void
@@ -38,7 +41,7 @@ final class TaskEventHandlersTest extends TestCase
     private function completed(string $at = self::AT): void
     {
         $metadata = new EventMetadata('event', 'task.completed', 1, new \DateTimeImmutable($at), 'courses');
-        (new TaskCompletedHandler($this->progress, $this->activity))(new TaskCompleted($metadata, 'student', 'event-path', 'task'));
+        (new TaskCompletedHandler($this->progress, $this->activity, $this->stuck))(new TaskCompleted($metadata, 'student', 'event-path', 'task'));
     }
 
     private function progress(): TaskProgress
@@ -107,5 +110,15 @@ final class TaskEventHandlersTest extends TestCase
             self::assertSame(ActivitySource::Other, $point->source);
             self::assertEquals(new \DateTimeImmutable(self::AT), $point->occurredAt);
         }
+    }
+
+    public function testOnlyCompletionChecksStuck(): void
+    {
+        $this->started();
+        self::assertSame([], $this->stuck->checks);
+
+        $this->completed();
+
+        self::assertSame([['student', 'task', 'event']], $this->stuck->checks);
     }
 }

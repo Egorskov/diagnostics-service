@@ -21,3 +21,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+when@test:
+    services:
+        # падает заданное число раз, чтобы тесты прошли через ретраи транспорта outbox
+        App\Tests\Support\FlakySignalPublisher:
+            decorates: App\Infrastructure\Messenger\AmqpSignalPublisher
+            arguments: ['@.inner']

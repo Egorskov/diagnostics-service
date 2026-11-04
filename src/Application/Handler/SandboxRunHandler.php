@@ -9,6 +9,7 @@ use App\Application\Port\ActivityPoint;
 use App\Application\Port\ActivityTracker;
 use App\Application\Port\SandboxRunRepository;
 use App\Application\Port\TaskProgressRepository;
+use App\Application\Port\TaskStuckCheck;
 use App\Domain\Progress\ActivitySource;
 use App\Domain\Progress\SandboxRun;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -20,6 +21,7 @@ final readonly class SandboxRunHandler
         private SandboxRunRepository $runs,
         private TaskProgressRepository $progress,
         private ActivityTracker $activity,
+        private TaskStuckCheck $stuck,
     ) {
     }
 
@@ -44,5 +46,6 @@ final readonly class SandboxRunHandler
         }
 
         $this->activity->record(new ActivityPoint($event->studentId, $event->taskId, ActivitySource::Sandbox, $occurredAt));
+        $this->stuck->check($event->studentId, $event->taskId, $event->metadata());
     }
 }

@@ -15,6 +15,7 @@ use App\Domain\Progress\TaskStatus;
 use App\Tests\Support\InMemorySandboxRunRepository;
 use App\Tests\Support\InMemoryTaskProgressRepository;
 use App\Tests\Support\RecordingActivityTracker;
+use App\Tests\Support\RecordingTaskStuckCheck;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -25,6 +26,7 @@ final class SandboxRunHandlerTest extends TestCase
     private InMemorySandboxRunRepository $runs;
     private InMemoryTaskProgressRepository $progress;
     private RecordingActivityTracker $activity;
+    private RecordingTaskStuckCheck $stuck;
     private SandboxRunHandler $handler;
 
     protected function setUp(): void
@@ -32,7 +34,8 @@ final class SandboxRunHandlerTest extends TestCase
         $this->runs = new InMemorySandboxRunRepository();
         $this->progress = new InMemoryTaskProgressRepository();
         $this->activity = new RecordingActivityTracker();
-        $this->handler = new SandboxRunHandler($this->runs, $this->progress, $this->activity);
+        $this->stuck = new RecordingTaskStuckCheck();
+        $this->handler = new SandboxRunHandler($this->runs, $this->progress, $this->activity, $this->stuck);
     }
 
     private static function event(SandboxResult $result, string $runId = 'run', ?string $errorType = null): SandboxRunEvent
@@ -86,6 +89,7 @@ final class SandboxRunHandlerTest extends TestCase
         self::assertSame('task', $this->activity->points[0]->taskId);
         self::assertSame(ActivitySource::Sandbox, $this->activity->points[0]->source);
         self::assertEquals(new \DateTimeImmutable(self::AT), $this->activity->points[0]->occurredAt);
+        self::assertSame([['student', 'task', 'event']], $this->stuck->checks);
     }
 
     public function testSameRunWithNewEventChangesNothing(): void
@@ -98,6 +102,7 @@ final class SandboxRunHandlerTest extends TestCase
         self::assertCount(1, $this->runs->runs);
         self::assertSame(1, $progress->failedRuns());
         self::assertCount(1, $this->activity->points);
+        self::assertCount(1, $this->stuck->checks);
     }
 
     public function testUnknownTaskFailsAndSavesNothing(): void
@@ -111,5 +116,6 @@ final class SandboxRunHandlerTest extends TestCase
 
         self::assertSame([], $this->runs->runs);
         self::assertSame([], $this->activity->points);
+        self::assertSame([], $this->stuck->checks);
     }
 }

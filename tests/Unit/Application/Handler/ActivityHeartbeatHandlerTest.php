@@ -9,6 +9,7 @@ use App\Application\Event\Incoming\ActivityHeartbeat;
 use App\Application\Handler\ActivityHeartbeatHandler;
 use App\Domain\Progress\ActivitySource;
 use App\Tests\Support\RecordingActivityTracker;
+use App\Tests\Support\RecordingTaskStuckCheck;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -18,16 +19,19 @@ final class ActivityHeartbeatHandlerTest extends TestCase
     public function testPassesActivityPointOn(?string $taskId): void
     {
         $tracker = new RecordingActivityTracker();
+        $stuck = new RecordingTaskStuckCheck();
         $occurredAt = new \DateTimeImmutable('2026-10-30T09:00:00Z');
         $metadata = new EventMetadata('event', 'activity.heartbeat', 1, $occurredAt, 'courses');
 
-        (new ActivityHeartbeatHandler($tracker))(new ActivityHeartbeat($metadata, 'student', $taskId, ActivitySource::Theory));
+        (new ActivityHeartbeatHandler($tracker, $stuck))(new ActivityHeartbeat($metadata, 'student', $taskId, ActivitySource::Theory));
 
         self::assertCount(1, $tracker->points);
         self::assertSame('student', $tracker->points[0]->studentId);
         self::assertSame($taskId, $tracker->points[0]->taskId);
         self::assertSame(ActivitySource::Theory, $tracker->points[0]->source);
         self::assertSame($occurredAt, $tracker->points[0]->occurredAt);
+        // без задания проверять застревание нечего
+        self::assertSame(null === $taskId ? [] : [['student', $taskId, 'event']], $stuck->checks);
     }
 
     /**
