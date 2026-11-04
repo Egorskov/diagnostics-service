@@ -23,7 +23,7 @@
 
 ## 5. HTTP
 
-- [ ] 5.1 `StubJwtAuthenticator`, `ApiUser`, firewall `api` и JSON-ответы 401/403 (требования «Токен в каждом запросе», «Подпись на MVP не проверяется»; design, решение 2). Проверка: юнит-тест authenticator — нет заголовка, не три части, payload не JSON, нет `sub`, роль `admin`, истёкший и отсутствующий `exp`, произвольная подпись; `make check`; коммит `feat: stub JWT authenticator for Read-API`
+- [x] 5.1 `StubJwtAuthenticator`, `ApiUser`, firewall `api` и JSON-ответы 401/403 (требования «Токен в каждом запросе», «Подпись на MVP не проверяется»; design, решение 2). Проверка: юнит-тест authenticator — нет заголовка, не три части, payload не JSON, нет `sub`, роль `admin`, истёкший и отсутствующий `exp`, произвольная подпись; `make check`; коммит `feat: stub JWT authenticator for Read-API`
 - [ ] 5.2 `StudentVoter` (требования «Ученик видит только себя», «Ментор видит своих учеников»; design, решение 3). Проверка: юнит-тест voter — свой и чужой ученик, ментор текущего и прошлого пути, ученик без пути; `make check`; коммит `feat: student access voter`
 - [ ] 5.3 Контроллер `GET /api/v1/students/{id}/summary` и `SummaryJson` (design, решение 9). Проверка: функциональный тест через события и `kernel->handle()` — тело совпадает с формой примера §8, включая `0.0` в балансе; 401, 403 и 404 по сценариям спек; `make check`; коммит `feat: GET /api/v1/students/{id}/summary`
 - [ ] 5.4 Контроллер `GET /api/v1/mentor/students`. Проверка: функциональный тест — порядок по риску, бывший ученик не виден, ученик получает 403, пустой список; `make check`; коммит `feat: GET /api/v1/mentor/students`
