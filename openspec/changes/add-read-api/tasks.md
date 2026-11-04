@@ -5,7 +5,7 @@
 ## 1. Основа
 
 - [x] 1.1 Зависимость `symfony/security-bundle` 7.4: firewall, authenticator и voter для Read-API (design, решение 2). Проверка: `composer.json`, `composer.lock` и `symfony.lock` обновлены, рецепт создал `config/packages/security.yaml`, `make check` зелёный; коммит `build: add symfony/security-bundle for Read-API auth`
-- [ ] 1.2 ADR `docs/adr/0006-api-auth-stub.md`: Bearer JWT, claims `sub`, `role`, `exp`, подпись на MVP не проверяется, план замены на публичный ключ Auth (design, решения 2, 10). Проверка: ADR ссылается на SPEC §2, §8; коммит `docs: ADR 0006 Read-API auth stub`
+- [x] 1.2 ADR `docs/adr/0006-api-auth-stub.md`: Bearer JWT, claims `sub`, `role`, `exp`, подпись на MVP не проверяется, план замены на публичный ключ Auth (design, решения 2, 10). Проверка: ADR ссылается на SPEC §2, §8; коммит `docs: ADR 0006 Read-API auth stub`
 
 ## 2. Domain
 
