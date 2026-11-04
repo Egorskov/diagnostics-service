@@ -19,7 +19,7 @@
 ## 4. Use cases
 
 - [x] 4.1 `StudentSummaryQuery` и `StudentSummary` в `src/Application/Api/`: `PathMetrics`, `Regularity`, `TimeBalance` и активные сигналы на `now` в зоне `app.timezone` (требования `student-summary`; design, решение 8). Проверка: юнит-тест на in-memory read-модели — пример SPEC §8 целиком, нет пути → `null`, предмет недельного сигнала из `weeklyGoalCheck()`; `make check`; коммит `feat: student summary query`
-- [ ] 4.2 `MentorStudentsQuery` и `MentorStudent`: ученики текущих путей ментора, последняя активность и сортировка по риску (требования `mentor-students`; design, решение 7). Проверка: юнит-тест — порядок 0,6 / 1,1 / без `spi`, равный `spi` с `delay_days` 23 и 5, ученик без сессий, пустой список; `make check`; коммит `feat: mentor students query`
+- [x] 4.2 `MentorStudentsQuery` и `MentorStudent`: ученики текущих путей ментора, последняя активность и сортировка по риску (требования `mentor-students`; design, решение 7). Проверка: юнит-тест — порядок 0,6 / 1,1 / без `spi`, равный `spi` с `delay_days` 23 и 5, ученик без сессий, пустой список; `make check`; коммит `feat: mentor students query`
 
 ## 5. HTTP
 
