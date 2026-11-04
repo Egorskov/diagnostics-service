@@ -27,10 +27,10 @@
 
 | Часть | Слой | Где |
 |---|---|---|
-| `Regularity` — активные дни недели, серия, активные минуты недели | Domain | `src/Domain/Metrics/` |
+| `Regularity` — активные дни недели, серия, активные минуты недели; вход — `ActivityInterval` | Domain | `src/Domain/Metrics/` |
 | `TimeBalance` — доли списанного по категориям | Domain | `src/Domain/Metrics/` |
 | `StudentSummaryQuery`, `MentorStudentsQuery`, результаты `StudentSummary` и `MentorStudent` | Application | `src/Application/Api/` |
-| Порт `ProgressReadModel` и его DTO `CurrentPath`, `ActivityInterval` | Application | `src/Application/Port/` |
+| Порт `ProgressReadModel` и его DTO `CurrentPath` | Application | `src/Application/Port/` |
 | `DbalProgressReadModel` | Infrastructure | `src/Infrastructure/Persistence/Doctrine/` |
 | Контроллеры и перевод в JSON (`SummaryJson`) | UI | `src/UI/Http/Controller/` |
 | `StubJwtAuthenticator`, `ApiUser`, `StudentVoter`, ответы 401 и 403 | UI | `src/UI/Http/Security/` |
@@ -75,7 +75,7 @@ Firewall `api` на `^/api`, `stateless: true`, а `access_control` требуе
 
 ### 5. Неделя, активный день и серия — в `Regularity`
 
-`Regularity::calculate(list<ActivityInterval>, now, zone)` возвращает `activeDaysInWeek`, `streakDays` и `weekActiveMinutes`:
+`Regularity::calculate(list<ActivityInterval>, now, zone)` (отрезок сессии — в Domain: его принимает расчёт, а Domain не зависит от портов) возвращает `activeDaysInWeek`, `streakDays` и `weekActiveMinutes`:
 - Неделя — с понедельника 00:00 по воскресенье в зоне, как в `WeeklyMoment::weekStart`.
 - Активные дни — все календарные даты в зоне от `started_at` до `last_seen_at` каждой сессии. Сессия через полночь делает активными оба дня.
 - Активные минуты недели — сумма `last_seen_at − started_at + 1 мин` по сессиям, у которых `started_at` попадает в неделю. Это та же формула, что `ActivitySession::minutes()`.
