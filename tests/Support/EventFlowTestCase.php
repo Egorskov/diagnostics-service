@@ -10,6 +10,8 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpStamp;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
@@ -100,5 +102,26 @@ abstract class EventFlowTestCase extends KernelTestCase
     protected function rowCount(string $table): int
     {
         return (int) $this->connection->fetchOne('SELECT count(*) FROM '.$table);
+    }
+
+    /**
+     * GET к Read-API через ядро, без HTTP-клиента (design add-read-api, решение 9).
+     */
+    protected static function get(string $uri, ?string $token): Response
+    {
+        $kernel = self::$kernel ?? throw new \LogicException('Kernel is not booted');
+
+        return $kernel->handle(Request::create($uri, 'GET', server: null === $token ? [] : ['HTTP_AUTHORIZATION' => 'Bearer '.$token]));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function json(Response $response): array
+    {
+        $data = json_decode((string) $response->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+        self::assertIsArray($data);
+
+        return $data;
     }
 }
