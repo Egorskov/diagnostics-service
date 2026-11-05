@@ -4,7 +4,7 @@
 
 ## 1. Генератор
 
-- [ ] 1.1 `EmulatedEvent`, `Profile`, `Scenario` и `ScenarioGenerator` в `src/UI/Console/Emulator/` для профиля `steady` (требования «Поток событий одного ученика», «Конверт и payload по контракту»; design, решения 3, 5). Проверка юнит-тестом:
+- [x] 1.1 `EmulatedEvent`, `Profile`, `Scenario` и `ScenarioGenerator` в `src/UI/Console/Emulator/` для профиля `steady` (требования «Поток событий одного ученика», «Конверт и payload по контракту»; design, решения 3, 5). Проверка юнит-тестом:
   - первое событие — `path.assigned` с `started_at` за `--days` дней;
   - `occurred_at` не убывает и не позже `now`;
   - `task.started` раньше `task.completed`;
