@@ -49,7 +49,7 @@
   - повторная доставка того же seed ничего не меняет.
 
   `make check`; коммит `test: event emulator end-to-end flow`
-- [ ] 3.2 Ручная проверка на настоящем RabbitMQ:
+- [x] 3.2 Ручная проверка на настоящем RabbitMQ:
   - `make emulate ARGS="stuck --seed=…"`, затем `make consume`;
   - очереди `diagnostics.courses`, `diagnostics.time`, `diagnostics.heartbeat` опустели, failure transport пуст;
   - выведенными токенами `curl` к `/api/v1/students/{id}/summary` и `/api/v1/mentor/students` отвечает 200;
