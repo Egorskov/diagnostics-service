@@ -15,7 +15,7 @@
   - каждое событие разбирается `EnvelopeSerializer::decode()` не в `UndecodableMessage`.
 
   `make check`; коммит `feat: event emulator scenario generator`
-- [ ] 1.2 Профили `behind`, `stuck`, `inactive` и защита `steady` от недельного сигнала. Всё через `Thresholds` (требование «Профили поведения»; design, решение 4). Проверка табличным юнит-тестом на in-memory порогах, включая нестандартные пороги и `--days` = 1:
+- [x] 1.2 Профили `behind`, `stuck`, `inactive` и защита `steady` от недельного сигнала. Всё через `Thresholds` (требование «Профили поведения»; design, решение 4). Проверка табличным юнит-тестом на in-memory порогах, включая нестандартные пороги и `--days` = 1:
   - `stuck`: active > ratio × оценка;
   - `inactive`: пауза ≥ N дней;
   - `behind`: неделя < ratio × цель;

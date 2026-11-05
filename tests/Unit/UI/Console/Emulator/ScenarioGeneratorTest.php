@@ -7,6 +7,7 @@ namespace App\Tests\Unit\UI\Console\Emulator;
 use App\Infrastructure\Messenger\EnvelopeSerializer;
 use App\Infrastructure\Messenger\EventTypeRegistry;
 use App\Infrastructure\Messenger\UndecodableMessage;
+use App\Tests\Support\FixedThresholds;
 use App\UI\Console\Emulator\EmulatedEvent;
 use App\UI\Console\Emulator\EmulatedStream;
 use App\UI\Console\Emulator\Profile;
@@ -22,7 +23,7 @@ final class ScenarioGeneratorTest extends TestCase
 
     private static function generate(int $days = 14, int $seed = 42, string $now = self::NOW): EmulatedStream
     {
-        return (new ScenarioGenerator('Europe/Belgrade'))->generate(new Scenario(Profile::Steady, $days, $seed), new \DateTimeImmutable($now));
+        return (new ScenarioGenerator(new FixedThresholds(), 'Europe/Belgrade'))->generate(new Scenario(Profile::Steady, $days, $seed), new \DateTimeImmutable($now));
     }
 
     /**
@@ -155,7 +156,7 @@ final class ScenarioGeneratorTest extends TestCase
         $student = '11111111-1111-4111-8111-111111111111';
         $mentor = '44444444-4444-4444-8444-444444444444';
 
-        $stream = (new ScenarioGenerator('Europe/Belgrade'))->generate(new Scenario(Profile::Steady, 3, 1, $student, $mentor), new \DateTimeImmutable(self::NOW));
+        $stream = (new ScenarioGenerator(new FixedThresholds(), 'Europe/Belgrade'))->generate(new Scenario(Profile::Steady, 3, 1, $student, $mentor), new \DateTimeImmutable(self::NOW));
 
         self::assertSame([$student, $mentor], [$stream->studentId, $stream->mentorId]);
         foreach ($stream->events as $event) {
