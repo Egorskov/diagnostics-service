@@ -31,10 +31,10 @@
   - `EnvelopeSerializer::encode()` возвращает тело байт-в-байт и `Content-Type: application/json`.
 
   `make check`; коммит `feat: publish emulated events to broker transports`
-- [ ] 2.2 `EmulateEventsCommand` (`app:emulate-events`): опции `--student`, `--mentor`, `--days`, `--profile`, `--seed`, `--dry-run`, валидация и вывод (требования «Публикация тем же путём, что у продюсеров», «Воспроизводимость и опции»; design, решение 7). Проверка тестом через `CommandTester`:
+- [x] 2.2 `EmulateEventsCommand` (`app:emulate-events`): аргумент `profile` (опцию `--profile` занимает профайлер команд Symfony), опции `--student`, `--mentor`, `--days`, `--seed`, `--dry-run`, валидация и вывод (требования «Публикация тем же путём, что у продюсеров», «Воспроизводимость и опции»; design, решение 7). Проверка тестом через `CommandTester`:
   - `--dry-run` печатает NDJSON;
   - два запуска с одним seed дают одинаковый вывод;
-  - `--profile=lazy`, неверный UUID, `--days=0`, `inactive` с малым `--days` дают ненулевой код и пустые транспорты;
+  - профиль `lazy`, неверный UUID, `--days=0`, `inactive` с малым `--days` дают ненулевой код и пустые транспорты;
   - вывод содержит id и токены.
 
   `make check`; коммит `feat: app:emulate-events command`
@@ -50,7 +50,7 @@
 
   `make check`; коммит `test: event emulator end-to-end flow`
 - [ ] 3.2 Ручная проверка на настоящем RabbitMQ:
-  - `make emulate ARGS="--profile=stuck --seed=…"`, затем `make consume`;
+  - `make emulate ARGS="stuck --seed=…"`, затем `make consume`;
   - очереди `diagnostics.courses`, `diagnostics.time`, `diagnostics.heartbeat` опустели, failure transport пуст;
   - выведенными токенами `curl` к `/api/v1/students/{id}/summary` и `/api/v1/mentor/students` отвечает 200;
   - во временной очереди на `diagnostics.events` пришёл `diagnostics.task.stuck`;

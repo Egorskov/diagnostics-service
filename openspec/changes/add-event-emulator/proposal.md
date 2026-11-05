@@ -10,7 +10,7 @@
   - генерирует историю одного ученика за последние `--days` дней (по умолчанию 14): `path.assigned`, затем по дням `task.started`, `activity.heartbeat` раз в 60 с (SPEC §4), `sandbox.run`, `time.logged`, `task.completed`;
   - конверты и payload строго по `docs/asyncapi.yaml`, `occurred_at` — в прошлом, события идут по возрастанию времени;
   - публикует в `courses.events`, `time.events` и `activity.events`, routing key = `event_type`, то есть тем же путём, что настоящие продюсеры.
-- Профили поведения `--profile`. Каждый, кроме `steady`, доводит ученика до условия одного из сигналов MVP (SPEC §7.2) с порогами из таблицы `threshold`:
+- Профили поведения — аргумент `profile` (`app:emulate-events stuck`). Каждый, кроме `steady`, доводит ученика до условия одного из сигналов MVP (SPEC §7.2) с порогами из таблицы `threshold`:
   - `steady` — занимается регулярно, идёт около плана;
   - `behind` — за текущую неделю списано меньше `weekly_goal_min_ratio` недельной цели;
   - `stuck` — активное время на текущем задании больше `stuck_time_ratio` × оценка, задание не закрыто;
