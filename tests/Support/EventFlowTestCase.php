@@ -71,11 +71,11 @@ abstract class EventFlowTestCase extends KernelTestCase
     /**
      * @param list<string> $receivers
      */
-    protected static function consume(int $messages, array $receivers = ['courses']): void
+    protected static function consume(int $messages, array $receivers = ['courses'], int $timeLimit = 5): void
     {
         $application = new Application(self::$kernel ?? throw new \LogicException('Kernel is not booted'));
         $tester = new CommandTester($application->find('messenger:consume'));
-        $tester->execute(['receivers' => $receivers, '--limit' => $messages, '--time-limit' => 5, '--no-reset' => true]);
+        $tester->execute(['receivers' => $receivers, '--limit' => $messages, '--time-limit' => $timeLimit, '--no-reset' => true]);
     }
 
     /**
