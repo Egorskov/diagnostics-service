@@ -25,7 +25,7 @@
 
 ## 2. Команда
 
-- [ ] 2.1 `MessengerEventPublisher`: sender транспорта с `RawBodyStamp` и `AmqpStamp(event_type)` (design, решение 2). Проверка юнит-тестом:
+- [x] 2.1 `MessengerEventPublisher`: sender транспорта с `RawBodyStamp` и `AmqpStamp(event_type)` (design, решение 2). Проверка юнит-тестом:
   - транспорт по типу события;
   - routing key;
   - `EnvelopeSerializer::encode()` возвращает тело байт-в-байт и `Content-Type: application/json`.
